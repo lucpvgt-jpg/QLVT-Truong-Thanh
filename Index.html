@@ -1,0 +1,2944 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TRƯỜNG THÀNH - Phần Mềm Quản Lý Vật Tư Công Trình</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f1f5f9;
+      color: #0f172a;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+      body {
+        background: #ffffff;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Top Header -->
+  <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center text-slate-950 font-bold text-lg shadow-md">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <h1 class="text-lg font-bold tracking-tight">TRƯỜNG THÀNH</h1>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30 font-medium">Đa Dự Án & Đa Kho Công Ty</span>
+            <div class="flex items-center gap-1.5 ml-1">
+              <select id="globalProjectSelect" onchange="onGlobalProjectChange()" class="bg-slate-800 text-amber-300 border border-slate-700 rounded-lg px-2.5 py-1 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500"></select>
+              <button type="button" onclick="openProjectModal()" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-[11px] font-medium transition" title="Thêm dự án mới">+ Dự án</button>
+            </div>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5" id="projectTitleDisplay">Dự án: Tổ hợp Chung cư & Thương mại Hải Phòng Tower (Giai đoạn Kết cấu & Hoàn thiện)</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 flex-wrap">
+        <button type="button" onclick="openQuickActionModal('import')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition shadow-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+          + Nhập Kho
+        </button>
+        <button type="button" onclick="openQuickActionModal('export')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-semibold transition shadow-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14"/></svg>
+          - Xuất Kho
+        </button>
+        <button type="button" onclick="switchTab('warehouses')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition shadow-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+          ⇄ Thu Hồi Vật Tư Thừa
+        </button>
+        <button type="button" onclick="exportAllToCSV()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          Xuất CSV
+        </button>
+        <button type="button" onclick="openResetConfirmModal()" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs transition" title="Khôi phục dữ liệu mẫu">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          Dữ liệu mẫu
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="bg-slate-800/80 border-t border-slate-800">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-1 overflow-x-auto custom-scrollbar py-1.5">
+        <button type="button" id="tabBtn-dashboard" onclick="switchTab('dashboard')" class="tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition flex items-center gap-2 bg-amber-500 text-slate-950 font-semibold">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          Tổng Quan
+        </button>
+        <button type="button" id="tabBtn-inventory" onclick="switchTab('inventory')" class="tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition flex items-center gap-2 text-slate-300 hover:bg-slate-700/60">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+          Tồn Kho Vật Tư
+        </button>
+        <button type="button" id="tabBtn-transactions" onclick="switchTab('transactions')" class="tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition flex items-center gap-2 text-slate-300 hover:bg-slate-700/60">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+          Nhập - Xuất Kho
+        </button>
+        <button type="button" id="tabBtn-stockcard" onclick="switchTab('stockcard')" class="tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition flex items-center gap-2 text-slate-300 hover:bg-slate-700/60">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Thẻ Kho (S12-DN)
+        </button>
+        <button type="button" id="tabBtn-budget" onclick="switchTab('budget')" class="tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition flex items-center gap-2 text-slate-300 hover:bg-slate-700/60">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Ngân Sách & Định Mức
+        </button>
+        <button type="button" id="tabBtn-alerts" onclick="switchTab('alerts')" class="tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition flex items-center gap-2 text-slate-300 hover:bg-slate-700/60">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          Cảnh Báo & Điều Phối
+          <span id="navAlertBadge" class="px-1.5 py-0.5 text-[11px] rounded-full bg-rose-600 text-white font-bold">0</span>
+        </button>
+        <button type="button" id="tabBtn-warehouses" onclick="switchTab('warehouses')" class="tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition flex items-center gap-2 text-slate-300 hover:bg-slate-700/60">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+          Kho Công Ty & Vật Tư Thừa
+          <span id="navWarehouseBadge" class="px-1.5 py-0.5 text-[11px] rounded-full bg-indigo-600 text-white font-bold">4 kho</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- Top Smart Alert Banner -->
+    <div id="topAlertBanner" class="bg-amber-50 border border-amber-300 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm no-print">
+      <div class="flex items-start sm:items-center gap-3">
+        <div class="p-2 rounded-lg bg-rose-100 text-rose-700 shrink-0">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        </div>
+        <div>
+          <p class="text-sm font-semibold text-slate-900" id="topAlertHeadline">Đang kiểm tra hệ thống cảnh báo kho công trường...</p>
+          <p class="text-xs text-slate-600 mt-0.5" id="topAlertSubtext">Theo dõi sát định mức tồn tối thiểu, ngân sách BOQ và tỷ lệ hao hụt thi công.</p>
+        </div>
+      </div>
+      <button type="button" onclick="switchTab('alerts')" class="shrink-0 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium transition">
+        Xem chi tiết xử lý →
+      </button>
+    </div>
+
+    <!-- ==================== TAB 1: DASHBOARD ==================== -->
+    <section id="view-dashboard" class="space-y-6">
+      <!-- KPI Row -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-slate-500 uppercase">Ngân Sách Vật Tư (BOQ)</span>
+            <span class="p-1.5 rounded-lg bg-blue-50 text-blue-600">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+            </span>
+          </div>
+          <p class="text-xl font-bold text-slate-900 mt-2" id="kpiTotalBudget">0 ₫</p>
+          <p class="text-xs text-slate-500 mt-1" id="kpiBudgetSub">Tổng dự toán được duyệt</p>
+        </div>
+
+        <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-slate-500 uppercase">Tổng Giá Trị Nhập Kho</span>
+            <span class="p-1.5 rounded-lg bg-emerald-50 text-emerald-600">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+            </span>
+          </div>
+          <p class="text-xl font-bold text-emerald-700 mt-2" id="kpiTotalInbound">0 ₫</p>
+          <p class="text-xs text-slate-500 mt-1" id="kpiInboundSub">0 phiếu nhập kho</p>
+        </div>
+
+        <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-slate-500 uppercase">Giá Trị Xuất Thi Công</span>
+            <span class="p-1.5 rounded-lg bg-amber-50 text-amber-600">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+            </span>
+          </div>
+          <p class="text-xl font-bold text-amber-600 mt-2" id="kpiTotalOutbound">0 ₫</p>
+          <p class="text-xs text-slate-500 mt-1" id="kpiOutboundSub">0 phiếu xuất công trường</p>
+        </div>
+
+        <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-slate-500 uppercase">Giá Trị Tồn Kho Hiện Tại</span>
+            <span class="p-1.5 rounded-lg bg-indigo-50 text-indigo-600">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+            </span>
+          </div>
+          <p class="text-xl font-bold text-indigo-700 mt-2" id="kpiCurrentStockValue">0 ₫</p>
+          <p class="text-xs text-slate-500 mt-1" id="kpiStockItemsSub">0 danh mục vật tư</p>
+        </div>
+
+        <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-slate-500 uppercase">Cảnh Báo Công Trường</span>
+            <span class="p-1.5 rounded-lg bg-rose-50 text-rose-600">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </span>
+          </div>
+          <p class="text-xl font-bold text-rose-600 mt-2" id="kpiAlertCount">0 cảnh báo</p>
+          <p class="text-xs text-slate-500 mt-1" id="kpiAlertDetailSub">Tồn kho & vượt ngân sách</p>
+        </div>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2 class="text-sm font-bold text-slate-900">Ngân Sách Dự Toán (BOQ) vs. Thực Tế Nhập & Xuất</h2>
+              <p class="text-xs text-slate-500">Đơn vị: Triệu VNĐ theo nhóm vật tư chính</p>
+            </div>
+            <span class="text-xs px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 font-medium">Cập nhật tức thời</span>
+          </div>
+          <div class="relative h-72">
+            <canvas id="budgetCategoryChart"></canvas>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2 class="text-sm font-bold text-slate-900">Phân Bổ Giá Trị Xuất Kho Theo Hạng Mục Thi Công</h2>
+              <p class="text-xs text-slate-500">Theo dõi tiêu hao vật tư tại từng mũi thi công</p>
+            </div>
+            <span class="text-xs px-2.5 py-1 rounded-md bg-amber-50 text-amber-800 font-medium">Theo hạng mục</span>
+          </div>
+          <div class="relative h-72">
+            <canvas id="workPackageChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Dashboard Split: Critical Stock Items & Recent Transactions -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Critical Stock Table -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="p-4 border-b border-slate-200 flex items-center justify-between">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">Vật Tư Cần Chú Ý (Sắp Hết / Vượt Ngân Sách)</h3>
+              <p class="text-xs text-slate-500">Ưu tiên đặt hàng hoặc kiểm soát định mức xuất</p>
+            </div>
+            <button type="button" onclick="switchTab('inventory')" class="text-xs font-semibold text-blue-600 hover:text-blue-700">Xem toàn bộ kho →</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 text-[11px] font-semibold text-slate-500 uppercase border-b border-slate-200">
+                  <th class="py-2.5 px-4">Vật tư</th>
+                  <th class="py-2.5 px-3 text-right">Tồn hiện tại</th>
+                  <th class="py-2.5 px-3 text-right">Tồn tối thiểu</th>
+                  <th class="py-2.5 px-3 text-center">Trạng thái</th>
+                  <th class="py-2.5 px-4 text-right">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="dashboardCriticalTableBody" class="divide-y divide-slate-100 text-xs"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="p-4 border-b border-slate-200 flex items-center justify-between">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">Giao Dịch Nhập - Xuất Kho Gần Nhất</h3>
+              <p class="text-xs text-slate-500">Nhật ký chứng từ thực tế tại kho công trường</p>
+            </div>
+            <button type="button" onclick="switchTab('transactions')" class="text-xs font-semibold text-blue-600 hover:text-blue-700">Lịch sử phiếu →</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 text-[11px] font-semibold text-slate-500 uppercase border-b border-slate-200">
+                  <th class="py-2.5 px-4">Số phiếu</th>
+                  <th class="py-2.5 px-3">Vật tư</th>
+                  <th class="py-2.5 px-3 text-right">Số lượng</th>
+                  <th class="py-2.5 px-3">Đối tượng / Hạng mục</th>
+                  <th class="py-2.5 px-4 text-right">Thẻ kho</th>
+                </tr>
+              </thead>
+              <tbody id="dashboardRecentTxBody" class="divide-y divide-slate-100 text-xs"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: INVENTORY (TỒN KHO) ==================== -->
+    <section id="view-inventory" class="space-y-5 hidden">
+      <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-base font-bold text-slate-900">Bảng Tổng Hợp Nhập - Xuất - Tồn Kho Vật Tư</h2>
+          <p class="text-xs text-slate-500">Theo dõi số lượng tồn đầu kỳ, phát sinh trong kỳ, tồn cuối kỳ và giá trị tồn kho thực tế</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <input type="text" id="inventorySearchInput" oninput="renderInventoryTable()" placeholder="Tìm mã VT, tên vật tư..." class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 w-48 sm:w-56" />
+          <select id="inventoryCategoryFilter" onchange="renderInventoryTable()" class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+            <option value="ALL">Tất cả nhóm vật tư</option>
+            <option value="Thép xây dựng">Thép xây dựng</option>
+            <option value="Xi măng & Bê tông">Xi măng & Bê tông</option>
+            <option value="Cốt pha & Giàn giáo">Cốt pha & Giàn giáo</option>
+            <option value="Cát - Đá - Gạch">Cát - Đá - Gạch</option>
+            <option value="Vật tư M&E & Phụ gia">Vật tư M&E & Phụ gia</option>
+          </select>
+          <select id="inventoryStatusFilter" onchange="renderInventoryTable()" class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+            <option value="ALL">Mọi trạng thái tồn</option>
+            <option value="LOW">Dưới mức tối thiểu (Cần nhập)</option>
+            <option value="SAFE">An toàn</option>
+            <option value="OVER_BUDGET">Vượt khối lượng dự toán BOQ</option>
+          </select>
+          <button type="button" onclick="openNewMaterialModal()" class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+            Thêm danh mục VT
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto custom-scrollbar">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-100 text-[11px] font-bold text-slate-600 uppercase border-b border-slate-200">
+                <th class="py-3 px-3">Mã VT</th>
+                <th class="py-3 px-3">Tên Vật Tư & Quy Cách</th>
+                <th class="py-3 px-2">Nhóm</th>
+                <th class="py-3 px-2 text-center">ĐVT</th>
+                <th class="py-3 px-2.5 text-right">Tồn Đầu</th>
+                <th class="py-3 px-2.5 text-right text-emerald-700">Tổng Nhập</th>
+                <th class="py-3 px-2.5 text-right text-amber-700">Tổng Xuất</th>
+                <th class="py-3 px-2.5 text-right bg-slate-200/60 font-extrabold text-slate-900">Tồn Cuối</th>
+                <th class="py-3 px-2.5 text-right">Tồn Tối Thiểu</th>
+                <th class="py-3 px-3 text-right">Đơn Giá BQ</th>
+                <th class="py-3 px-3 text-right">Thành Tiền Tồn</th>
+                <th class="py-3 px-3 text-center">Trạng Thái</th>
+                <th class="py-3 px-3 text-right">Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody id="inventoryTableBody" class="divide-y divide-slate-100 text-xs"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: NHẬP - XUẤT KHO (TRANSACTIONS) ==================== -->
+    <section id="view-transactions" class="space-y-6 hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Form Lập Phiếu Nhập / Xuất -->
+        <div class="lg:col-span-5 bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+          <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
+            <div>
+              <h2 class="text-base font-bold text-slate-900" id="txFormTitle">Lập Phiếu Nhập / Xuất Kho</h2>
+              <p class="text-xs text-slate-500">Tự động ghi sổ Thẻ kho & cập nhật Ngân sách công trình</p>
+            </div>
+            <div class="inline-flex rounded-lg p-0.5 bg-slate-100 border border-slate-200">
+              <button type="button" id="txModeBtn-IN" onclick="setTransactionFormMode('IN')" class="px-3 py-1 rounded-md text-xs font-semibold transition bg-emerald-600 text-white">
+                Phiếu Nhập (PNK)
+              </button>
+              <button type="button" id="txModeBtn-OUT" onclick="setTransactionFormMode('OUT')" class="px-3 py-1 rounded-md text-xs font-semibold transition text-slate-600 hover:text-slate-900">
+                Phiếu Xuất (PXK)
+              </button>
+            </div>
+          </div>
+
+          <form id="transactionForm" onsubmit="submitTransactionForm(event)" class="space-y-3.5 text-xs">
+            <input type="hidden" id="txTypeInput" value="IN" />
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1" for="txCodeInput">Số hiệu chứng từ</label>
+                <input type="text" id="txCodeInput" required class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-slate-50 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-amber-500" />
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1" for="txDateInput">Ngày chứng từ</label>
+                <input type="date" id="txDateInput" required class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500" />
+              </div>
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1" for="txProjectSelect">Thuộc Dự Án Công Trình</label>
+              <select id="txProjectSelect" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"></select>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1" for="txMaterialSelect">Chọn Vật Tư Công Trình</label>
+              <select id="txMaterialSelect" onchange="onTxMaterialChange()" required class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"></select>
+              <div id="txMaterialStockHint" class="mt-1.5 p-2 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between text-[11px] text-slate-600">
+                <span>Tồn khả dụng: <strong id="hintAvailableQty" class="text-slate-900">0</strong></span>
+                <span>Tồn tối thiểu: <strong id="hintMinQty" class="text-slate-900">0</strong></span>
+                <span>Dự toán còn lại: <strong id="hintRemainingBoq" class="text-slate-900">0</strong></span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1" for="txQtyInput">Số lượng (<span id="txUnitLabel">ĐVT</span>)</label>
+                <input type="number" id="txQtyInput" step="0.01" min="0.01" oninput="validateTxFormLive()" required placeholder="Nhập số lượng..." class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500" />
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1" for="txPriceInput" id="txPriceLabel">Đơn giá nhập (VNĐ)</label>
+                <input type="number" id="txPriceInput" step="100" min="0" oninput="validateTxFormLive()" required class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500" />
+              </div>
+            </div>
+
+            <!-- Dynamic Partner / Work Package Field -->
+            <div id="txPartnerContainer">
+              <label class="block font-semibold text-slate-700 mb-1" for="txPartnerInput" id="txPartnerLabel">Nhà cung cấp / Đơn vị giao hàng</label>
+              <input type="text" id="txPartnerInput" required placeholder="VD: Công ty Thép Hòa Phát / Đại lý Xi măng Chinfon..." class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500" />
+            </div>
+
+            <div id="txWorkPackageContainer" class="hidden">
+              <label class="block font-semibold text-slate-700 mb-1" for="txWorkPackageSelect">Hạng mục thi công nhận vật tư</label>
+              <select id="txWorkPackageSelect" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-amber-500">
+                <option value="Móng & Tầng hầm B1-B2">Móng & Tầng hầm B1-B2</option>
+                <option value="Kết cấu Thân (Tầng 1 - Tầng 10)">Kết cấu Thân (Tầng 1 - Tầng 10)</option>
+                <option value="Kết cấu Cốt pha & Giàn giáo">Kết cấu Cốt pha & Giàn giáo</option>
+                <option value="Xây trát & Hoàn thiện kiến trúc">Xây trát & Hoàn thiện kiến trúc</option>
+                <option value="Hệ thống Cơ điện (M&E)">Hệ thống Cơ điện (M&E)</option>
+              </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1" for="txPersonInput" id="txPersonLabel">Người giao / Tổ đội nhận</label>
+                <input type="text" id="txPersonInput" required placeholder="VD: Tổ trưởng Nguyễn Văn Hùng" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500" />
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1" for="txWastageInput">Hao hụt thực tế (%)</label>
+                <input type="number" id="txWastageInput" step="0.1" min="0" max="50" value="0" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500" />
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1" for="txNoteInput">Diễn giải / Ghi chú chứng từ</label>
+              <input type="text" id="txNoteInput" required placeholder="VD: Nhập thép đổ sàn tầng 6 theo PO-2026-089" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500" />
+            </div>
+
+            <div id="txLiveValidationBox" class="p-2.5 rounded-lg bg-slate-100 text-slate-700 text-xs flex items-center justify-between">
+              <span>Tổng thành tiền phiếu:</span>
+              <strong id="txCalculatedTotal" class="text-sm text-slate-900">0 ₫</strong>
+            </div>
+
+            <button type="submit" id="txSubmitBtn" class="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider transition shadow-sm">
+              Lưu Phiếu Nhập Kho & Ghi Sổ Thẻ Kho
+            </button>
+          </form>
+        </div>
+
+        <!-- Danh Sách Lịch Sử Chứng Từ Nhập - Xuất -->
+        <div class="lg:col-span-7 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col">
+          <div class="p-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h3 class="text-base font-bold text-slate-900">Sổ Nhật Ký Phiếu Nhập Kho & Phiếu Xuất Kho</h3>
+              <p class="text-xs text-slate-500">Tra cứu chứng từ gốc, lọc theo loại phiếu hoặc hạng mục công trình</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <input type="text" id="txHistorySearch" oninput="renderTransactionsTable()" placeholder="Tìm số phiếu, vật tư, tổ đội..." class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs w-44 focus:outline-none focus:ring-2 focus:ring-amber-500" />
+              <select id="txHistoryTypeFilter" onchange="renderTransactionsTable()" class="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+                <option value="ALL">Tất cả phiếu (Nhập & Xuất)</option>
+                <option value="IN">Chỉ Phiếu Nhập Kho (PNK)</option>
+                <option value="OUT">Chỉ Phiếu Xuất Kho (PXK)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto custom-scrollbar flex-1">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-100 text-[11px] font-bold text-slate-600 uppercase border-b border-slate-200">
+                  <th class="py-3 px-3">Số Phiếu</th>
+                  <th class="py-3 px-2.5">Ngày</th>
+                  <th class="py-3 px-2">Loại</th>
+                  <th class="py-3 px-3">Vật Tư</th>
+                  <th class="py-3 px-2.5 text-right">Số Lượng</th>
+                  <th class="py-3 px-3 text-right">Thành Tiền</th>
+                  <th class="py-3 px-3">Nhà CC / Hạng Mục Xuất</th>
+                  <th class="py-3 px-2.5 text-right">Xóa</th>
+                </tr>
+              </thead>
+              <tbody id="txHistoryTableBody" class="divide-y divide-slate-100 text-xs"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 4: THẺ KHO (STOCK CARD S12-DN) ==================== -->
+    <section id="view-stockcard" class="space-y-5 hidden">
+      <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-bold text-[11px]">Mẫu số S12-DN</span>
+              <h2 class="text-base font-bold text-slate-900">THẺ KHO VẬT TƯ CÔNG TRÌNH (SỔ CHI TIẾT VẬT TƯ)</h2>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">Theo dõi chi tiết từng nghiệp vụ Nhập - Xuất và Tồn kho lũy kế sau mỗi giao dịch của từng loại vật tư</p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2 no-print">
+            <label for="stockCardMaterialSelect" class="text-xs font-semibold text-slate-700">Chọn vật tư:</label>
+            <select id="stockCardMaterialSelect" onchange="renderStockCard()" class="px-3 py-2 rounded-lg border border-slate-300 bg-slate-50 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500 min-w-[260px]"></select>
+            <button type="button" onclick="window.print()" class="px-3 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+              In Thẻ Kho
+            </button>
+          </div>
+        </div>
+
+        <!-- Thông tin Header Thẻ Kho -->
+        <div id="stockCardHeaderInfo" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 py-4 border-b border-slate-200 text-xs"></div>
+
+        <!-- Bảng Thẻ Kho Chuẩn -->
+        <div class="overflow-x-auto mt-4">
+          <table class="w-full text-left border-collapse border border-slate-200">
+            <thead>
+              <tr class="bg-slate-100 text-[11px] font-bold text-slate-700 uppercase">
+                <th class="py-2.5 px-3 border border-slate-200 text-center">STT</th>
+                <th class="py-2.5 px-3 border border-slate-200">Ngày Chứng Từ</th>
+                <th class="py-2.5 px-3 border border-slate-200">Số Hiệu CT (Nhập/Xuất)</th>
+                <th class="py-2.5 px-3 border border-slate-200">Diễn Giải & Đối Tượng / Hạng Mục</th>
+                <th class="py-2.5 px-3 border border-slate-200 text-right text-emerald-700">SL Nhập</th>
+                <th class="py-2.5 px-3 border border-slate-200 text-right text-amber-700">SL Xuất</th>
+                <th class="py-2.5 px-3 border border-slate-200 text-right bg-amber-50/80 text-slate-900">Tồn Lũy Kế</th>
+                <th class="py-2.5 px-3 border border-slate-200">Người Giao / Nhận</th>
+              </tr>
+            </thead>
+            <tbody id="stockCardTableBody" class="divide-y divide-slate-200 text-xs"></tbody>
+            <tfoot id="stockCardTableFoot" class="bg-slate-100 font-bold text-xs"></tfoot>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 5: NGÂN SÁCH & ĐỊNH MỨC (BUDGET & BOQ) ==================== -->
+    <section id="view-budget" class="space-y-5 hidden">
+      <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-900">Kiểm Soát Ngân Sách Vật Tư (BOQ) & Định Mức Hao Hụt</h2>
+          <p class="text-xs text-slate-500">Đối chiếu khối lượng dự toán BOQ với khối lượng thực nhập, thực xuất và cảnh báo vượt định mức</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <select id="budgetFilterStatus" onchange="renderBudgetTable()" class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+            <option value="ALL">Tất cả hạng mục vật tư</option>
+            <option value="WARNING">Sắp chạm/Vượt ngân sách (>= 80%)</option>
+            <option value="OVER">Đã vượt ngân sách (> 100%)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto custom-scrollbar">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-100 text-[11px] font-bold text-slate-600 uppercase border-b border-slate-200">
+                <th class="py-3 px-3">Mã & Tên Vật Tư</th>
+                <th class="py-3 px-2 text-center">ĐVT</th>
+                <th class="py-3 px-2.5 text-right">KL Dự Toán (BOQ)</th>
+                <th class="py-3 px-2.5 text-right">KL Đã Nhập</th>
+                <th class="py-3 px-2.5 text-right">KL Đã Xuất</th>
+                <th class="py-3 px-3 text-right">Ngân Sách BOQ (VNĐ)</th>
+                <th class="py-3 px-3 text-right">Chi Phí Nhập Thực Tế</th>
+                <th class="py-3 px-3 w-44">Tiến Độ Ngân Sách (%)</th>
+                <th class="py-3 px-2.5 text-center">Hao Hụt (ĐM / TT)</th>
+                <th class="py-3 px-3 text-right">Điều Chỉnh BOQ</th>
+              </tr>
+            </thead>
+            <tbody id="budgetTableBody" class="divide-y divide-slate-100 text-xs"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 6: CẢNH BÁO & ĐIỀU PHỐI (ALERTS & PM AI) ==================== -->
+    <section id="view-alerts" class="space-y-6 hidden">
+      <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">Trung Tâm Cảnh Báo Rủi Ro Vật Tư & Điều Phối Tiến Độ Công Trường</h2>
+            <p class="text-xs text-slate-500">Tự động phát hiện thiếu hụt tồn kho, vượt dự toán BOQ, vượt định mức hao hụt và gợi ý phương án xử lý</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <select id="alertTypeFilter" onchange="renderAlertsCenter()" class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+              <option value="ALL">Tất cả cảnh báo</option>
+              <option value="STOCK_LOW">Thiếu hụt tồn kho (Dưới mức tối thiểu)</option>
+              <option value="BUDGET_OVER">Vượt / Sắp vượt ngân sách BOQ</option>
+              <option value="WASTAGE_HIGH">Vượt định mức hao hụt thi công</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="alertsContainerList" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4"></div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 7: ĐA KHO CÔNG TY & THU HỒI VẬT TƯ THỪA ==================== -->
+    <section id="view-warehouses" class="space-y-6 hidden">
+      <!-- Top Summary & Company Warehouse Locations -->
+      <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800 font-bold text-xs">Quản Lý Đa Kho & Đa Dự Án</span>
+              <h2 class="text-base font-bold text-slate-900">Hệ Thống Kho Công Ty Theo Địa Điểm & Thu Hồi Vật Tư Thừa</h2>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">Thu hồi vật tư dư thừa sau thi công từ các dự án về những kho công ty ở các địa điểm khác nhau và điều chuyển tái sử dụng cho dự án mới</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" onclick="openProjectModal()" class="px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition">
+              + Thêm Dự Án Công Trình
+            </button>
+            <button type="button" onclick="openWarehouseModal()" class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+              + Thêm Kho Công Ty (Địa điểm mới)
+            </button>
+          </div>
+        </div>
+
+        <!-- Danh sách thẻ các Kho Công Ty ở các địa điểm khác nhau -->
+        <div id="companyWarehousesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4"></div>
+      </div>
+
+      <!-- Main Split: Form Thu Hồi / Điều Chuyển Vật Tư Thừa & Bảng Tồn Kho Vật Tư Thừa Theo Địa Điểm -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Form Lập Phiếu Thu Hồi Vật Tư Thừa / Điều Chuyển Kho Công Ty -->
+        <div class="lg:col-span-5 bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+          <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
+            <div>
+              <h3 class="text-base font-bold text-slate-900">Lập Phiếu Thu Hồi / Điều Chuyển Vật Tư Thừa</h3>
+              <p class="text-xs text-slate-500">Liên thông trực tiếp giữa Tồn kho Dự án và các Kho Công Ty</p>
+            </div>
+            <div class="inline-flex rounded-lg p-0.5 bg-slate-100 border border-slate-200">
+              <button type="button" id="surplusModeBtn-RETURN" onclick="setSurplusFormMode('RETURN')" class="px-2.5 py-1 rounded-md text-[11px] font-semibold transition bg-indigo-600 text-white">
+                Thu hồi về Kho CTy
+              </button>
+              <button type="button" id="surplusModeBtn-REISSUE" onclick="setSurplusFormMode('REISSUE')" class="px-2.5 py-1 rounded-md text-[11px] font-semibold transition text-slate-600 hover:text-slate-900">
+                Cấp sang Dự án khác
+              </button>
+            </div>
+          </div>
+
+          <form id="surplusTransferForm" onsubmit="submitSurplusTransferForm(event)" class="space-y-3.5 text-xs">
+            <input type="hidden" id="surplusModeInput" value="RETURN" />
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1" for="surplusCodeInput">Mã phiếu thu hồi / ĐC</label>
+                <input type="text" id="surplusCodeInput" required class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-slate-50 font-mono text-xs" />
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1" for="surplusDateInput">Ngày thực hiện</label>
+                <input type="date" id="surplusDateInput" required class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs" />
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1" for="surplusProjectSelect" id="surplusProjectLabel">Dự án có vật tư thừa bàn giao</label>
+              <select id="surplusProjectSelect" onchange="onSurplusFormSelectionChange()" required class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs"></select>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1" for="surplusWarehouseSelect" id="surplusWarehouseLabel">Nhập vào Kho Công Ty (Chọn địa điểm kho)</label>
+              <select id="surplusWarehouseSelect" onchange="onSurplusFormSelectionChange()" required class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs"></select>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1" for="surplusMaterialSelect">Chọn Vật Tư Thừa</label>
+              <select id="surplusMaterialSelect" onchange="onSurplusFormSelectionChange()" required class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs"></select>
+              <div id="surplusStockHintBox" class="mt-1.5 p-2 rounded-lg bg-indigo-50/70 border border-indigo-200 flex items-center justify-between text-[11px] text-indigo-900">
+                <span>Tồn tại dự án: <strong id="hintSurplusProjectStock">0</strong></span>
+                <span>Tồn tại kho công ty: <strong id="hintSurplusWhStock">0</strong></span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1" for="surplusQtyInput">Số lượng (<span id="surplusUnitSpan">ĐVT</span>)</label>
+                <input type="number" id="surplusQtyInput" step="0.01" min="0.01" oninput="onSurplusFormSelectionChange()" required placeholder="Nhập SL..." class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs" />
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1" for="surplusConditionSelect">Tình trạng chất lượng</label>
+                <select id="surplusConditionSelect" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs">
+                  <option value="Mới 100% (Nguyên đai/Chưa qua SD)">Mới 100% (Nguyên đai/Chưa qua SD)</option>
+                  <option value="Tốt 90% (Thu hồi tái sử dụng ngay)">Tốt 90% (Thu hồi tái sử dụng ngay)</option>
+                  <option value="Khá 75% (Cốt pha/Thép cần phân loại)">Khá 75% (Cốt pha/Thép cần phân loại)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1" for="surplusHandlerInput">Người bàn giao / Thủ kho</label>
+                <input type="text" id="surplusHandlerInput" required placeholder="VD: KS. Lê Minh - Thủ kho Bùi Tấn" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs" />
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1" for="surplusNoteInput">Ghi chú nguyên nhân dư thừa</label>
+                <input type="text" id="surplusNoteInput" required placeholder="VD: Kết thúc đổ sàn tầng mái, dư thép..." class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs" />
+              </div>
+            </div>
+
+            <div id="surplusValuationBox" class="p-2.5 rounded-lg bg-slate-100 text-slate-700 text-xs flex items-center justify-between">
+              <span>Giá trị vật tư thu hồi / luân chuyển:</span>
+              <strong id="surplusCalculatedValue" class="text-sm text-indigo-700">0 ₫</strong>
+            </div>
+
+            <button type="submit" id="surplusSubmitBtn" class="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs uppercase tracking-wider transition shadow-sm">
+              Ghi Sổ Thu Hồi Vật Tư Thừa Về Kho Công Ty
+            </button>
+          </form>
+        </div>
+
+        <!-- Bảng Tồn Kho Vật Tư Thừa Tại Các Kho Công Ty & Lịch Sử Luân Chuyển -->
+        <div class="lg:col-span-7 space-y-5">
+          <!-- Bảng Tồn Kho Vật Tư Thừa Theo Địa Điểm Kho -->
+          <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h3 class="text-sm font-bold text-slate-900">Tồn Kho Vật Tư Thừa Đang Lưu Giữ Tại Các Kho Công Ty</h3>
+                <p class="text-xs text-slate-500">Tra cứu vật tư dư thừa đang nằm ở kho nào, địa điểm nào và thu hồi từ dự án nào</p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2">
+                <select id="warehouseStockFilterLocation" onchange="renderWarehousesTab()" class="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs bg-white">
+                  <option value="ALL">Tất cả Kho Công Ty (Mọi địa điểm)</option>
+                </select>
+                <select id="warehouseStockFilterProject" onchange="renderWarehousesTab()" class="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs bg-white">
+                  <option value="ALL">Mọi dự án nguồn</option>
+                </select>
+              </div>
+            </div>
+            <div class="overflow-x-auto custom-scrollbar">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-100 text-[11px] font-bold text-slate-600 uppercase border-b border-slate-200">
+                    <th class="py-2.5 px-3">Kho Công Ty & Địa Điểm</th>
+                    <th class="py-2.5 px-3">Vật Tư Thừa</th>
+                    <th class="py-2.5 px-3">Nguồn Dự Án Trả Về</th>
+                    <th class="py-2.5 px-2.5 text-right">SL Tồn Kho CTy</th>
+                    <th class="py-2.5 px-3 text-right">Giá Trị Tương Đương</th>
+                    <th class="py-2.5 px-2.5 text-center">Tình Trạng</th>
+                    <th class="py-2.5 px-3 text-right">Điều Chuyển</th>
+                  </tr>
+                </thead>
+                <tbody id="warehouseSurplusStockBody" class="divide-y divide-slate-100 text-xs"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Lịch sử Phiếu Thu Hồi & Điều Chuyển Giữa Dự Án - Kho Công Ty -->
+          <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-4 border-b border-slate-200 flex items-center justify-between">
+              <div>
+                <h3 class="text-sm font-bold text-slate-900">Nhật Ký Thu Hồi Vật Tư Thừa & Cấp Phát Tái Sử Dụng</h3>
+                <p class="text-xs text-slate-500">Chứng từ bàn giao giữa Ban chỉ huy các Dự án và Thủ kho các Kho Công Ty</p>
+              </div>
+              <span class="text-xs font-semibold text-indigo-700" id="totalSurplusSavedBadge">Tổng giá trị thu hồi: 0 ₫</span>
+            </div>
+            <div class="overflow-x-auto custom-scrollbar">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-50 text-[11px] font-semibold text-slate-500 uppercase border-b border-slate-200">
+                    <th class="py-2.5 px-3">Số Phiếu</th>
+                    <th class="py-2.5 px-2">Loại</th>
+                    <th class="py-2.5 px-3">Vật Tư & SL</th>
+                    <th class="py-2.5 px-3">Dự Án ⇄ Kho Công Ty (Địa Điểm)</th>
+                    <th class="py-2.5 px-3">Tình Trạng / Ghi Chú</th>
+                  </tr>
+                </thead>
+                <tbody id="surplusHistoryTableBody" class="divide-y divide-slate-100 text-xs"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== MODAL: THÊM / SỬA DANH MỤC VẬT TƯ ==================== -->
+  <div id="materialModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-200">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
+        <h3 class="text-base font-bold text-slate-900" id="materialModalTitle">Thêm Danh Mục Vật Tư Mới</h3>
+        <button type="button" onclick="closeMaterialModal()" class="text-slate-400 hover:text-slate-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form id="materialModalForm" onsubmit="saveMaterialFromModal(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="editMaterialId" value="" />
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1" for="matCodeInput">Mã vật tư</label>
+            <input type="text" id="matCodeInput" required placeholder="VD: VT-THEP-D25" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-mono" />
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1" for="matCategoryInput">Nhóm vật tư</label>
+            <select id="matCategoryInput" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white">
+              <option value="Thép xây dựng">Thép xây dựng</option>
+              <option value="Xi măng & Bê tông">Xi măng & Bê tông</option>
+              <option value="Cốt pha & Giàn giáo">Cốt pha & Giàn giáo</option>
+              <option value="Cát - Đá - Gạch">Cát - Đá - Gạch</option>
+              <option value="Vật tư M&E & Phụ gia">Vật tư M&E & Phụ gia</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div class="col-span-2">
+            <label class="block font-semibold text-slate-700 mb-1" for="matNameInput">Tên vật tư & Quy cách</label>
+            <input type="text" id="matNameInput" required placeholder="VD: Thép thanh vằn D25 CB400-V Hòa Phát" class="w-full px-3 py-2 rounded-lg border border-slate-300" />
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1" for="matUnitInput">Đơn vị tính</label>
+            <input type="text" id="matUnitInput" required placeholder="Tấn, Bao, m³..." class="w-full px-3 py-2 rounded-lg border border-slate-300" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1" for="matInitStockInput">Tồn đầu kỳ</label>
+            <input type="number" id="matInitStockInput" step="0.01" min="0" required class="w-full px-3 py-2 rounded-lg border border-slate-300" />
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1" for="matMinStockInput">Tồn tối thiểu (Min)</label>
+            <input type="number" id="matMinStockInput" step="0.01" min="0" required class="w-full px-3 py-2 rounded-lg border border-slate-300" />
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1" for="matPriceInput">Đơn giá dự toán (VNĐ)</label>
+            <input type="number" id="matPriceInput" step="100" min="0" required class="w-full px-3 py-2 rounded-lg border border-slate-300" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1" for="matBoqQtyInput">Tổng KL Dự Toán BOQ</label>
+            <input type="number" id="matBoqQtyInput" step="0.01" min="0.01" required class="w-full px-3 py-2 rounded-lg border border-slate-300" />
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1" for="matMaxWastageInput">Định mức hao hụt cho phép (%)</label>
+            <input type="number" id="matMaxWastageInput" step="0.1" min="0" max="30" value="2.0" required class="w-full px-3 py-2 rounded-lg border border-slate-300" />
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">
+          <button type="button" onclick="closeMaterialModal()" class="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50">Hủy</button>
+          <button type="submit" class="px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-semibold">Lưu thông tin vật tư</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: XÁC NHẬN KHÔI PHỤC DỮ LIỆU MẪU ==================== -->
+  <div id="resetConfirmModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200">
+      <h3 class="text-base font-bold text-slate-900">Khôi phục dữ liệu công trình mẫu?</h3>
+      <p class="text-xs text-slate-600 mt-2">Thao tác này sẽ đặt lại toàn bộ danh mục vật tư, phiếu nhập kho, phiếu xuất kho, thẻ kho và ngân sách về trạng thái mẫu ban đầu của dự án.</p>
+      <div class="flex items-center justify-end gap-2 mt-5">
+        <button type="button" onclick="closeResetConfirmModal()" class="px-4 py-2 rounded-lg border border-slate-300 text-xs font-medium text-slate-700 hover:bg-slate-50">Đóng</button>
+        <button type="button" onclick="confirmResetDemoData()" class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-xs font-semibold text-white">Khôi phục ngay</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: THÊM DỰ ÁN MỚI ==================== -->
+  <div id="projectModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
+        <h3 class="text-base font-bold text-slate-900">Thêm Dự Án Thi Công Mới</h3>
+        <button type="button" onclick="closeProjectModal()" class="text-slate-400 hover:text-slate-600">✕</button>
+      </div>
+      <form id="projectModalForm" onsubmit="saveNewProject(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1" for="newPrjCodeInput">Mã dự án</label>
+          <input type="text" id="newPrjCodeInput" required placeholder="VD: PRJ-05" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-mono" />
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1" for="newPrjNameInput">Tên dự án công trình</label>
+          <input type="text" id="newPrjNameInput" required placeholder="VD: Nhà máy Sản xuất Linh kiện Vũ Yên" class="w-full px-3 py-2 rounded-lg border border-slate-300" />
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1" for="newPrjLocationInput">Địa điểm thi công</label>
+          <input type="text" id="newPrjLocationInput" required placeholder="VD: Đảo Vũ Yên, Thủy Nguyên, Hải Phòng" class="w-full px-3 py-2 rounded-lg border border-slate-300" />
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1" for="newPrjManagerInput">Chỉ huy trưởng phụ trách</label>
+          <input type="text" id="newPrjManagerInput" required placeholder="VD: KS. Nguyễn Hoàng Hải" class="w-full px-3 py-2 rounded-lg border border-slate-300" />
+        </div>
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">
+          <button type="button" onclick="closeProjectModal()" class="px-4 py-2 rounded-lg border border-slate-300 text-slate-700">Hủy</button>
+          <button type="submit" class="px-4 py-2 rounded-lg bg-slate-900 text-white font-semibold">Lưu Dự Án</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: THÊM KHO CÔNG TY (ĐỊA ĐIỂM MỚI) ==================== -->
+  <div id="warehouseModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
+        <h3 class="text-base font-bold text-slate-900">Thêm Kho Công Ty (Địa Điểm Mới)</h3>
+        <button type="button" onclick="closeWarehouseModal()" class="text-slate-400 hover:text-slate-600">✕</button>
+      </div>
+      <form id="warehouseModalForm" onsubmit="saveNewWarehouse(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1" for="newWhCodeInput">Mã kho công ty</label>
+          <input type="text" id="newWhCodeInput" required placeholder="VD: KHO-HP-05" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-mono" />
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1" for="newWhNameInput">Tên kho công ty</label>
+          <input type="text" id="newWhNameInput" required placeholder="VD: Kho Vật Tư & Máy Xây Dựng Kiến An" class="w-full px-3 py-2 rounded-lg border border-slate-300" />
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1" for="newWhAddressInput">Địa điểm / Địa chỉ cụ thể</label>
+          <input type="text" id="newWhAddressInput" required placeholder="VD: Số 128 Trường Chinh, Quận Kiến An, TP. Hải Phòng" class="w-full px-3 py-2 rounded-lg border border-slate-300" />
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1" for="newWhKeeperInput">Thủ kho phụ trách & SĐT</label>
+          <input type="text" id="newWhKeeperInput" required placeholder="VD: Ông Đỗ Văn Minh - 0904.112.334" class="w-full px-3 py-2 rounded-lg border border-slate-300" />
+        </div>
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">
+          <button type="button" onclick="closeWarehouseModal()" class="px-4 py-2 rounded-lg border border-slate-300 text-slate-700">Hủy</button>
+          <button type="submit" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold">Lưu Kho Công Ty</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+  <script>
+    const STORAGE_KEY = 'PROBUILD_WMS_STATE_V2_MULTIPROJECT';
+
+    // Dữ liệu mẫu chuẩn kỹ thuật xây dựng Việt Nam
+    function getDefaultState() {
+      return {
+        selectedProjectId: 'ALL',
+        projects: [
+          {
+            id: 'PRJ01',
+            code: 'DA-HP-TOWER',
+            name: 'Tổ hợp Chung cư & Thương mại Hải Phòng Tower',
+            location: 'Quận Lê Chân, TP. Hải Phòng',
+            manager: 'KS. Trần Minh Đức',
+            stage: 'Kết cấu Thân & Hoàn thiện'
+          },
+          {
+            id: 'PRJ02',
+            code: 'DA-DEEPC-B4',
+            name: 'Nhà xưởng Công nghiệp Deep C - Khu B4',
+            location: 'KKT Đình Vũ - Cát Hải, TP. Hải Phòng',
+            manager: 'KS. Nguyễn Hoàng Hải',
+            stage: 'Hoàn thiện & Bàn giao (Đang thu hồi VT thừa)'
+          },
+          {
+            id: 'PRJ03',
+            code: 'DA-CAM-RIVER',
+            name: 'Khu Đô Thị Ven Sông Cấm Riverside',
+            location: 'Thủy Nguyên, TP. Hải Phòng',
+            manager: 'KS. Phạm Quốc Khánh',
+            stage: 'Thi công Móng & Tầng hầm'
+          },
+          {
+            id: 'PRJ04',
+            code: 'DA-MARINA-QN',
+            name: 'Tổ hợp Khách sạn & Văn phòng Marina Bay',
+            location: 'Bãi Cháy, TP. Hạ Long, Quảng Ninh',
+            manager: 'KS. Vũ Hoàng Nam',
+            stage: 'Kết cấu Cốt pha & Sàn tầng 8'
+          }
+        ],
+        companyWarehouses: [
+          {
+            id: 'WH01',
+            code: 'KHO-TONG-TN',
+            name: 'Kho Tổng Công Ty - Thủy Nguyên',
+            address: 'Lô CN-04, KCN VSIP Thủy Nguyên, TP. Hải Phòng',
+            keeper: 'Thủ kho trưởng: Bùi Văn Tấn (0903.221.456)',
+            specialty: 'Thép xây dựng, Xi măng & Vật tư tổng hợp'
+          },
+          {
+            id: 'WH02',
+            code: 'KHO-DINHVU-02',
+            name: 'Kho Vật Tư & Thiết Bị Số 2 - Đình Vũ',
+            address: 'Khu Kinh tế Đình Vũ - Cát Hải, Quận Hải An, TP. Hải Phòng',
+            keeper: 'Thủ kho: Lê Quang Vinh (0912.889.310)',
+            specialty: 'Vật tư công nghiệp, Phụ gia & Thiết bị M&E'
+          },
+          {
+            id: 'WH03',
+            code: 'KHO-QUANGNINH-03',
+            name: 'Kho Vật Tư Khu Vực Quảng Ninh',
+            address: 'Đường số 3, KCN Cái Lân, TP. Hạ Long, Quảng Ninh',
+            keeper: 'Thủ kho: Phạm Hồng Sơn (0988.712.900)',
+            specialty: 'Thép, Cốt pha & Vật tư hoàn thiện cụm Đông Bắc'
+          },
+          {
+            id: 'WH04',
+            code: 'KHO-COTPHA-AD',
+            name: 'Kho Cốt Pha & Giàn Giáo Trung Tâm - An Dương',
+            address: 'Km14 Quốc lộ 5, Huyện An Dương, TP. Hải Phòng',
+            keeper: 'Thủ kho: Đặng Văn Hậu (0975.601.223)',
+            specialty: 'Ván khuôn phủ phim, Giàn giáo Ringlock & Cây chống'
+          }
+        ],
+        surplusStocks: [
+          {
+            id: 'SUR01',
+            warehouseId: 'WH01',
+            materialId: 'MAT01',
+            fromProjectId: 'PRJ02',
+            qty: 8.5,
+            condition: 'Mới 100% (Nguyên đai/Chưa qua SD)',
+            updatedAt: '2026-11-08',
+            note: 'Thép D20 dư sau khi hoàn thành kết cấu khung nhà xưởng Deep C B4'
+          },
+          {
+            id: 'SUR02',
+            warehouseId: 'WH04',
+            materialId: 'MAT05',
+            fromProjectId: 'PRJ02',
+            qty: 180,
+            condition: 'Tốt 90% (Thu hồi tái sử dụng ngay)',
+            updatedAt: '2026-11-09',
+            note: 'Ván khuôn phủ phim 18mm tháo dỡ từ dự án Deep C B4 đã vệ sinh'
+          },
+          {
+            id: 'SUR03',
+            warehouseId: 'WH02',
+            materialId: 'MAT08',
+            fromProjectId: 'PRJ01',
+            qty: 28,
+            condition: 'Mới 100% (Nguyên đai/Chưa qua SD)',
+            updatedAt: '2026-11-10',
+            note: 'Ống HDPE D25 dư từ đợt thi công M&E tầng hầm Hải Phòng Tower'
+          },
+          {
+            id: 'SUR04',
+            warehouseId: 'WH03',
+            materialId: 'MAT02',
+            fromProjectId: 'PRJ04',
+            qty: 6.2,
+            condition: 'Mới 100% (Nguyên đai/Chưa qua SD)',
+            updatedAt: '2026-11-11',
+            note: 'Thép D12 Việt Nhật dư sau điều chỉnh thiết kế dầm phụ tầng 7 Marina Bay'
+          },
+          {
+            id: 'SUR05',
+            warehouseId: 'WH02',
+            materialId: 'MAT09',
+            fromProjectId: 'PRJ02',
+            qty: 9,
+            condition: 'Mới 100% (Nguyên đai/Chưa qua SD)',
+            updatedAt: '2026-11-12',
+            note: 'Can Sika Latex TH chưa khui nắp thu hồi từ dự án Deep C B4'
+          }
+        ],
+        surplusTransfers: [
+          {
+            id: 'STX01',
+            code: 'PHT-2026-001',
+            date: '2026-11-08',
+            mode: 'RETURN',
+            projectId: 'PRJ02',
+            warehouseId: 'WH01',
+            materialId: 'MAT01',
+            qty: 8.5,
+            condition: 'Mới 100% (Nguyên đai/Chưa qua SD)',
+            handler: 'KS. Nguyễn Hoàng Hải → Thủ kho Bùi Văn Tấn',
+            note: 'Thu hồi thép D20 dư sau khi nghiệm thu kết cấu xưởng Deep C B4'
+          },
+          {
+            id: 'STX02',
+            code: 'PHT-2026-002',
+            date: '2026-11-09',
+            mode: 'RETURN',
+            projectId: 'PRJ02',
+            warehouseId: 'WH04',
+            materialId: 'MAT05',
+            qty: 180,
+            condition: 'Tốt 90% (Thu hồi tái sử dụng ngay)',
+            handler: 'Đội cốt pha B4 → Thủ kho Đặng Văn Hậu',
+            note: 'Nhập trả ván phủ phim còn tốt về Kho Cốt Pha An Dương'
+          },
+          {
+            id: 'STX03',
+            code: 'PHT-2026-003',
+            date: '2026-11-11',
+            mode: 'RETURN',
+            projectId: 'PRJ04',
+            warehouseId: 'WH03',
+            materialId: 'MAT02',
+            qty: 6.2,
+            condition: 'Mới 100% (Nguyên đai/Chưa qua SD)',
+            handler: 'KS. Vũ Hoàng Nam → Thủ kho Phạm Hồng Sơn',
+            note: 'Thu hồi thép D12 dư về Kho Khu Vực Quảng Ninh (KCN Cái Lân)'
+          }
+        ],
+        materials: [
+          {
+            id: 'MAT01',
+            code: 'VT-THEP-D20',
+            name: 'Thép thanh vằn D20 CB400-V Hòa Phát',
+            category: 'Thép xây dựng',
+            unit: 'Tấn',
+            initialStock: 15,
+            minStock: 20,
+            unitPrice: 16200000,
+            boqQty: 120,
+            allowedWastage: 2.0,
+            location: 'Bãi thép Khu A',
+            projectId: 'PRJ01'
+          },
+          {
+            id: 'MAT02',
+            code: 'VT-THEP-D12',
+            name: 'Thép thanh vằn D12 CB300-V Việt Nhật',
+            category: 'Thép xây dựng',
+            unit: 'Tấn',
+            initialStock: 18,
+            minStock: 12,
+            unitPrice: 16450000,
+            boqQty: 85,
+            allowedWastage: 2.0,
+            location: 'Bãi thép Khu A',
+            projectId: 'PRJ04'
+          },
+          {
+            id: 'MAT03',
+            code: 'VT-XM-PCB40',
+            name: 'Xi măng Vicem Hoàng Thạch PCB40 (Bao 50kg)',
+            category: 'Xi măng & Bê tông',
+            unit: 'Tấn',
+            initialStock: 25,
+            minStock: 30,
+            unitPrice: 1750000,
+            boqQty: 300,
+            allowedWastage: 1.5,
+            location: 'Kho kín số 1',
+            projectId: 'PRJ01'
+          },
+          {
+            id: 'MAT04',
+            code: 'VT-BT-C30',
+            name: 'Bê tông thương phẩm Mác 350 (C30) độ sụt 12±2',
+            category: 'Xi măng & Bê tông',
+            unit: 'm³',
+            initialStock: 0,
+            minStock: 0,
+            unitPrice: 1380000,
+            boqQty: 1500,
+            allowedWastage: 2.5,
+            location: 'Trạm trộn cấp trực tiếp',
+            projectId: 'PRJ01'
+          },
+          {
+            id: 'MAT05',
+            code: 'VT-CP-PHIM',
+            name: 'Ván khuôn (Cốt pha) phủ phim 1220x2440x18mm',
+            category: 'Cốt pha & Giàn giáo',
+            unit: 'Tấm',
+            initialStock: 350,
+            minStock: 200,
+            unitPrice: 460000,
+            boqQty: 1200,
+            allowedWastage: 5.0,
+            location: 'Kho cốt pha Khu B',
+            projectId: 'PRJ02'
+          },
+          {
+            id: 'MAT06',
+            code: 'VT-CAT-BT',
+            name: 'Cát vàng hạt trung đổ bê tông & xây trát (Mô đun > 2.0)',
+            category: 'Cát - Đá - Gạch',
+            unit: 'm³',
+            initialStock: 90,
+            minStock: 80,
+            unitPrice: 390000,
+            boqQty: 950,
+            allowedWastage: 4.0,
+            location: 'Bãi vật liệu rời Khu C',
+            projectId: 'PRJ03'
+          },
+          {
+            id: 'MAT07',
+            code: 'VT-GACH-TUYNEL',
+            name: 'Gạch đặc Tuynel 210x100x60mm loại A1',
+            category: 'Cát - Đá - Gạch',
+            unit: 'Viên',
+            initialStock: 25000,
+            minStock: 15000,
+            unitPrice: 1450,
+            boqQty: 180000,
+            allowedWastage: 3.0,
+            location: 'Bãi xếp gạch Khu C',
+            projectId: 'PRJ03'
+          },
+          {
+            id: 'MAT08',
+            code: 'VT-ME-ONG25',
+            name: 'Ống luồn dây điện chống cháy HDPE D25 Sino',
+            category: 'Vật tư M&E & Phụ gia',
+            unit: 'Cuộn',
+            initialStock: 40,
+            minStock: 25,
+            unitPrice: 320000,
+            boqQty: 220,
+            allowedWastage: 1.5,
+            location: 'Kho vật tư M&E số 2',
+            projectId: 'PRJ02'
+          },
+          {
+            id: 'MAT09',
+            code: 'VT-PG-SIKA',
+            name: 'Phụ gia chống thấm & hóa dẻo Sika Latex TH (Can 25L)',
+            category: 'Vật tư M&E & Phụ gia',
+            unit: 'Can',
+            initialStock: 12,
+            minStock: 15,
+            unitPrice: 1950000,
+            boqQty: 60,
+            allowedWastage: 1.0,
+            location: 'Kho hóa chất số 2',
+            projectId: 'PRJ01'
+          }
+        ],
+        transactions: [
+          {
+            id: 'TX01',
+            code: 'PNK-2026-001',
+            date: '2026-11-01',
+            type: 'IN',
+            materialId: 'MAT01',
+            qty: 55,
+            price: 16200000,
+            partner: 'Nhà máy Thép Hòa Phát Hải Dương',
+            workPackage: '',
+            person: 'KS. Trần Minh Đức (Nhận hàng)',
+            wastage: 0,
+            note: 'Nhập thép D20 đợt 1 phục vụ dầm sàn tầng 4-6'
+          },
+          {
+            id: 'TX02',
+            code: 'PXK-2026-001',
+            date: '2026-11-03',
+            type: 'OUT',
+            materialId: 'MAT01',
+            qty: 58,
+            price: 16200000,
+            partner: '',
+            workPackage: 'Kết cấu Thân (Tầng 1 - Tầng 10)',
+            person: 'Đội cốt thép số 1 - Nguyễn Văn Hùng',
+            wastage: 2.8,
+            note: 'Xuất gia công cốt thép dầm chính trục A-F tầng 5'
+          },
+          {
+            id: 'TX03',
+            code: 'PNK-2026-002',
+            date: '2026-11-04',
+            type: 'IN',
+            materialId: 'MAT03',
+            qty: 120,
+            price: 1750000,
+            partner: 'Tổng đại lý Xi măng Hoàng Thạch',
+            workPackage: '',
+            person: 'Thủ kho Lê Quang Vinh',
+            wastage: 0,
+            note: 'Nhập xi măng PCB40 xây trát & cán nền tầng hầm'
+          },
+          {
+            id: 'TX04',
+            code: 'PXK-2026-002',
+            date: '2026-11-06',
+            type: 'OUT',
+            materialId: 'MAT03',
+            qty: 125,
+            price: 1750000,
+            partner: '',
+            workPackage: 'Xây trát & Hoàn thiện kiến trúc',
+            person: 'Đội xây hoàn thiện - Phạm Văn Toàn',
+            wastage: 1.4,
+            note: 'Xuất xi măng xây tường ngăn tầng 2 & tầng 3'
+          },
+          {
+            id: 'TX05',
+            code: 'PNK-2026-003',
+            date: '2026-11-07',
+            type: 'IN',
+            materialId: 'MAT04',
+            qty: 680,
+            price: 1380000,
+            partner: 'Bê tông Thương phẩm Việt Úc - Hải Phòng',
+            workPackage: '',
+            person: 'KS. Giám sát Vũ Hoàng Nam',
+            wastage: 0,
+            note: 'Nhập bê tông tươi C30 đổ sàn tầng 5 (28 xe bồn)'
+          },
+          {
+            id: 'TX06',
+            code: 'PXK-2026-003',
+            date: '2026-11-07',
+            type: 'OUT',
+            materialId: 'MAT04',
+            qty: 680,
+            price: 1380000,
+            partner: '',
+            workPackage: 'Kết cấu Thân (Tầng 1 - Tầng 10)',
+            person: 'Đội bê tông công trường - Hoàng Văn Bách',
+            wastage: 2.2,
+            note: 'Xuất thẳng đổ bê tông sàn tầng 5 ca đêm'
+          },
+          {
+            id: 'TX07',
+            code: 'PNK-2026-004',
+            date: '2026-11-09',
+            type: 'IN',
+            materialId: 'MAT05',
+            qty: 750,
+            price: 465000,
+            partner: 'Công ty Gỗ Cốt Pha Tân Tiến',
+            workPackage: '',
+            person: 'Thủ kho Lê Quang Vinh',
+            wastage: 0,
+            note: 'Nhập bổ sung ván phủ phim 18mm cho sàn tầng 6-7'
+          },
+          {
+            id: 'TX08',
+            code: 'PXK-2026-004',
+            date: '2026-11-10',
+            type: 'OUT',
+            materialId: 'MAT05',
+            qty: 860,
+            price: 462000,
+            partner: '',
+            workPackage: 'Kết cấu Cốt pha & Giàn giáo',
+            person: 'Đội cốt pha - Trần Quốc Tuấn',
+            wastage: 6.4,
+            note: 'Xuất lắp dựng ván khuôn dầm sàn tầng 6 (Cắt lẻ góc vát)'
+          },
+          {
+            id: 'TX09',
+            code: 'PNK-2026-005',
+            date: '2026-11-11',
+            type: 'IN',
+            materialId: 'MAT09',
+            qty: 45,
+            price: 1980000,
+            partner: 'Đại lý Sika Miền Bắc',
+            workPackage: '',
+            person: 'Thủ kho Lê Quang Vinh',
+            wastage: 0,
+            note: 'Nhập Sika chống thấm cổ ống & sàn mái kỹ thuật'
+          },
+          {
+            id: 'TX10',
+            code: 'PXK-2026-005',
+            date: '2026-11-12',
+            type: 'OUT',
+            materialId: 'MAT09',
+            qty: 49,
+            price: 1980000,
+            partner: '',
+            workPackage: 'Móng & Tầng hầm B1-B2',
+            person: 'Đội chống thấm - Lê Văn Kiên',
+            wastage: 1.8,
+            note: 'Xuất xử lý mạch ngừng vách tầng hầm B2 & hố thang máy'
+          }
+        ]
+      };
+    }
+
+    let appState = loadState();
+    let budgetChartInstance = null;
+    let workPackageChartInstance = null;
+    let activeTab = 'dashboard';
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && Array.isArray(parsed.materials) && Array.isArray(parsed.transactions)) {
+            return parsed;
+          }
+        }
+      } catch (err) {
+        // Ignore storage errors in sandboxed iframe
+      }
+      return getDefaultState();
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } catch (err) {
+        // Ignore storage errors in sandboxed iframe
+      }
+    }
+
+    function formatCurrency(val) {
+      const num = Number(val) || 0;
+      return num.toLocaleString('vi-VN') + ' ₫';
+    }
+
+    function formatNumber(val) {
+      const num = Number(val) || 0;
+      return num.toLocaleString('vi-VN', { maximumFractionDigits: 2 });
+    }
+
+    // Tính toán đầy đủ số liệu Nhập - Xuất - Tồn - Ngân sách - Hao hụt cho từng vật tư
+    function computeMaterialMetrics(ignoreProjectFilter = false) {
+      const activePrj = appState.selectedProjectId || 'ALL';
+      const sourceMaterials = (!ignoreProjectFilter && activePrj !== 'ALL')
+        ? appState.materials.filter(m => (m.projectId || 'PRJ01') === activePrj)
+        : appState.materials;
+      return sourceMaterials.map(mat => {
+        const txs = appState.transactions.filter(t => t.materialId === mat.id);
+        let inboundQty = 0;
+        let inboundValue = 0;
+        let outboundQty = 0;
+        let outboundValue = 0;
+        let weightedWastageSum = 0;
+
+        txs.forEach(t => {
+          const q = Number(t.qty) || 0;
+          const p = Number(t.price) || mat.unitPrice;
+          if (t.type === 'IN') {
+            inboundQty += q;
+            inboundValue += q * p;
+          } else {
+            outboundQty += q;
+            outboundValue += q * p;
+            weightedWastageSum += q * (Number(t.wastage) || 0);
+          }
+        });
+
+        const initQty = Number(mat.initialStock) || 0;
+        const initValue = initQty * (Number(mat.unitPrice) || 0);
+        const totalAvailableQty = initQty + inboundQty;
+        const avgPrice = totalAvailableQty > 0
+          ? Math.round((initValue + inboundValue) / totalAvailableQty)
+          : (Number(mat.unitPrice) || 0);
+
+        const currentStock = Number((initQty + inboundQty - outboundQty).toFixed(2));
+        const currentStockValue = Math.max(0, Math.round(currentStock * avgPrice));
+
+        const boqQty = Number(mat.boqQty) || 1;
+        const boqBudget = Math.round(boqQty * (Number(mat.unitPrice) || 0));
+        const totalUsedOrImportedValue = initValue + inboundValue;
+        const budgetRatio = boqBudget > 0 ? (totalUsedOrImportedValue / boqBudget) * 100 : 0;
+        const boqQtyRatio = boqQty > 0 ? ((initQty + inboundQty) / boqQty) * 100 : 0;
+
+        const actualWastage = outboundQty > 0
+          ? Number((weightedWastageSum / outboundQty).toFixed(2))
+          : 0;
+
+        const isLowStock = mat.minStock > 0 && currentStock < mat.minStock;
+        const isOverBudget = budgetRatio > 100 || boqQtyRatio > 100;
+        const isNearBudget = !isOverBudget && (budgetRatio >= 85 || boqQtyRatio >= 85);
+        const isHighWastage = actualWastage > (Number(mat.allowedWastage) || 0);
+
+        return {
+          ...mat,
+          inboundQty: Number(inboundQty.toFixed(2)),
+          inboundValue,
+          outboundQty: Number(outboundQty.toFixed(2)),
+          outboundValue,
+          currentStock,
+          avgPrice,
+          currentStockValue,
+          boqBudget,
+          totalUsedOrImportedValue,
+          budgetRatio: Number(budgetRatio.toFixed(1)),
+          boqQtyRatio: Number(boqQtyRatio.toFixed(1)),
+          actualWastage,
+          isLowStock,
+          isOverBudget,
+          isNearBudget,
+          isHighWastage
+        };
+      });
+    }
+
+    // Tổng hợp danh sách Cảnh Báo Thông Minh
+    function generateSmartAlerts(metrics) {
+      const alerts = [];
+      metrics.forEach(m => {
+        if (m.isLowStock) {
+          const shortage = Number((m.minStock - m.currentStock).toFixed(2));
+          alerts.push({
+            id: 'ALT-STOCK-' + m.id,
+            type: 'STOCK_LOW',
+            severity: m.currentStock <= m.minStock * 0.5 ? 'CRITICAL' : 'WARNING',
+            materialId: m.id,
+            materialCode: m.code,
+            materialName: m.name,
+            title: `Tồn kho dưới định mức an toàn: ${m.name}`,
+            detail: `Tồn thực tế còn ${formatNumber(m.currentStock)} ${m.unit} (Định mức tối thiểu: ${formatNumber(m.minStock)} ${m.unit}). Thiếu hụt ${formatNumber(shortage)} ${m.unit}.`,
+            recommendation: `Đề xuất lập đơn đặt hàng (PO) nhập bổ sung tối thiểu ${formatNumber(Math.max(shortage, m.minStock))} ${m.unit} trước ca thi công tiếp theo để tránh gián đoạn đường găng (Critical Path).`,
+            suggestedOrderQty: Math.max(shortage, m.minStock)
+          });
+        }
+
+        if (m.isOverBudget || m.isNearBudget) {
+          alerts.push({
+            id: 'ALT-BUDGET-' + m.id,
+            type: 'BUDGET_OVER',
+            severity: m.isOverBudget ? 'CRITICAL' : 'WARNING',
+            materialId: m.id,
+            materialCode: m.code,
+            materialName: m.name,
+            title: m.isOverBudget
+              ? `Vượt ngân sách dự toán BOQ: ${m.name} (${m.budgetRatio}%)`
+              : `Sắp chạm trần ngân sách BOQ: ${m.name} (${m.budgetRatio}%)`,
+            detail: `Tổng giá trị cung ứng: ${formatCurrency(m.totalUsedOrImportedValue)} / Ngân sách BOQ: ${formatCurrency(m.boqBudget)} (Khối lượng: ${formatNumber(m.initialStock + m.inboundQty)} / ${formatNumber(m.boqQty)} ${m.unit}).`,
+            recommendation: `Kiểm tra lại biên bản nghiệm thu khối lượng thực tế và hồ sơ phát sinh thiết kế (Variation Order) trước khi duyệt xuất thêm.`,
+            suggestedOrderQty: 10
+          });
+        }
+
+        if (m.isHighWastage) {
+          alerts.push({
+            id: 'ALT-WASTE-' + m.id,
+            type: 'WASTAGE_HIGH',
+            severity: 'WARNING',
+            materialId: m.id,
+            materialCode: m.code,
+            materialName: m.name,
+            title: `Hao hụt thi công vượt định mức: ${m.name}`,
+            detail: `Hao hụt thực tế ghi nhận: ${m.actualWastage}% so với định mức cho phép là ${m.allowedWastage}% (Tổng đã xuất: ${formatNumber(m.outboundQty)} ${m.unit}).`,
+            recommendation: `Yêu cầu kỹ sư giám sát kiểm tra quy trình cắt nối thép / tận dụng luân chuyển ván khuôn tại công trường để giảm đề C (đầu mẩu thừa).`,
+            suggestedOrderQty: 0
+          });
+        }
+      });
+
+      return alerts;
+    }
+
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const div = document.createElement('div');
+      const bgClass = type === 'error'
+        ? 'bg-rose-600 text-white'
+        : type === 'warning'
+          ? 'bg-amber-500 text-slate-950'
+          : 'bg-slate-900 text-white';
+      div.className = `${bgClass} px-4 py-3 rounded-xl shadow-lg text-xs font-semibold flex items-center gap-2 transition transform duration-200 pointer-events-auto border border-white/10`;
+      div.innerHTML = `
+        <span>${message}</span>
+      `;
+      container.appendChild(div);
+      setTimeout(() => {
+        if (div.parentNode) div.parentNode.removeChild(div);
+      }, 3200);
+    }
+
+    function switchTab(tabName) {
+      activeTab = tabName;
+      const tabs = ['dashboard', 'inventory', 'transactions', 'stockcard', 'budget', 'alerts', 'warehouses'];
+      tabs.forEach(t => {
+        const section = document.getElementById('view-' + t);
+        const btn = document.getElementById('tabBtn-' + t);
+        if (t === tabName) {
+          section.classList.remove('hidden');
+          btn.className = 'tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap transition flex items-center gap-2 bg-amber-500 text-slate-950 shadow-sm';
+        } else {
+          section.classList.add('hidden');
+          btn.className = 'tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition flex items-center gap-2 text-slate-300 hover:bg-slate-700/60';
+        }
+      });
+      renderAll();
+    }
+
+    function openQuickActionModal(mode) {
+      switchTab('transactions');
+      setTransactionFormMode(mode === 'import' ? 'IN' : 'OUT');
+      const qtyInput = document.getElementById('txQtyInput');
+      if (qtyInput) qtyInput.focus();
+    }
+
+    function quickOrderForMaterial(materialId, suggestedQty) {
+      switchTab('transactions');
+      setTransactionFormMode('IN');
+      const sel = document.getElementById('txMaterialSelect');
+      if (sel) {
+        sel.value = materialId;
+        onTxMaterialChange();
+      }
+      if (suggestedQty && suggestedQty > 0) {
+        document.getElementById('txQtyInput').value = suggestedQty;
+      }
+      document.getElementById('txNoteInput').value = 'Nhập bổ sung khẩn cấp theo cảnh báo định mức tồn kho tối thiểu';
+      validateTxFormLive();
+      showToast('Đã điền sẵn thông tin vật tư cần nhập bổ sung vào Phiếu Nhập Kho!');
+    }
+
+    function viewMaterialStockCard(materialId) {
+      switchTab('stockcard');
+      const sel = document.getElementById('stockCardMaterialSelect');
+      if (sel) {
+        sel.value = materialId;
+        renderStockCard();
+      }
+    }
+
+    // ==================== RENDER DASHBOARD ====================
+    function renderDashboard(metrics, alerts) {
+      let totalBudget = 0;
+      let totalInboundVal = 0;
+      let totalOutboundVal = 0;
+      let totalStockVal = 0;
+
+      metrics.forEach(m => {
+        totalBudget += m.boqBudget;
+        totalInboundVal += m.inboundValue;
+        totalOutboundVal += m.outboundValue;
+        totalStockVal += m.currentStockValue;
+      });
+
+      const inCount = appState.transactions.filter(t => t.type === 'IN').length;
+      const outCount = appState.transactions.filter(t => t.type === 'OUT').length;
+
+      document.getElementById('kpiTotalBudget').textContent = formatCurrency(totalBudget);
+      document.getElementById('kpiTotalInbound').textContent = formatCurrency(totalInboundVal);
+      document.getElementById('kpiInboundSub').textContent = `${inCount} phiếu nhập kho đã ghi sổ`;
+      document.getElementById('kpiTotalOutbound').textContent = formatCurrency(totalOutboundVal);
+      document.getElementById('kpiOutboundSub').textContent = `${outCount} phiếu xuất thi công`;
+      document.getElementById('kpiCurrentStockValue').textContent = formatCurrency(totalStockVal);
+      document.getElementById('kpiStockItemsSub').textContent = `${metrics.length} danh mục vật tư quản lý`;
+      document.getElementById('kpiAlertCount').textContent = `${alerts.length} cảnh báo`;
+
+      const lowCount = alerts.filter(a => a.type === 'STOCK_LOW').length;
+      const budgetCount = alerts.filter(a => a.type === 'BUDGET_OVER').length;
+      document.getElementById('kpiAlertDetailSub').textContent = `${lowCount} thiếu tồn, ${budgetCount} ngân sách`;
+
+      // Update Top Banner & Badge
+      document.getElementById('navAlertBadge').textContent = alerts.length;
+      const banner = document.getElementById('topAlertBanner');
+      if (alerts.length > 0) {
+        banner.classList.remove('hidden');
+        document.getElementById('topAlertHeadline').textContent = `Cảnh báo công trường: Phát hiện ${alerts.length} vấn đề về Tồn kho tối thiểu, Ngân sách BOQ & Định mức hao hụt!`;
+        document.getElementById('topAlertSubtext').textContent = alerts.slice(0, 2).map(a => a.title).join(' • ');
+      } else {
+        document.getElementById('topAlertHeadline').textContent = 'Kho vật tư công trường đang ở trạng thái an toàn!';
+        document.getElementById('topAlertSubtext').textContent = 'Tất cả vật tư đều đạt ngưỡng tồn tối thiểu và nằm trong định mức ngân sách BOQ.';
+      }
+
+      // Render Critical Table on Dashboard
+      const criticalBody = document.getElementById('dashboardCriticalTableBody');
+      const criticalItems = metrics.filter(m => m.isLowStock || m.isOverBudget || m.isNearBudget || m.isHighWastage);
+      if (criticalItems.length === 0) {
+        criticalBody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400">Không có vật tư nào nằm trong diện cảnh báo.</td></tr>`;
+      } else {
+        criticalBody.innerHTML = criticalItems.map(m => {
+          let badge = '';
+          if (m.isLowStock) {
+            badge = `<span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 font-semibold text-[11px]">Thiếu tồn kho</span>`;
+          } else if (m.isOverBudget) {
+            badge = `<span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold text-[11px]">Vượt BOQ (${m.budgetRatio}%)</span>`;
+          } else if (m.isHighWastage) {
+            badge = `<span class="px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 font-semibold text-[11px]">Hao hụt ${m.actualWastage}%</span>`;
+          } else {
+            badge = `<span class="px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800 font-semibold text-[11px]">Sắp chạm BOQ</span>`;
+          }
+          return `
+            <tr class="hover:bg-slate-50">
+              <td class="py-2.5 px-4">
+                <div class="font-semibold text-slate-900">${m.name}</div>
+                <div class="text-[11px] text-slate-500 font-mono">${m.code}</div>
+              </td>
+              <td class="py-2.5 px-3 text-right font-bold ${m.isLowStock ? 'text-rose-600' : 'text-slate-900'}">${formatNumber(m.currentStock)} ${m.unit}</td>
+              <td class="py-2.5 px-3 text-right text-slate-600">${formatNumber(m.minStock)} ${m.unit}</td>
+              <td class="py-2.5 px-3 text-center">${badge}</td>
+              <td class="py-2.5 px-4 text-right">
+                <button type="button" onclick="quickOrderForMaterial('${m.id}', ${Math.max(10, m.minStock - m.currentStock)})" class="px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-semibold">
+                  + Nhập thêm
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      // Render Recent Transactions on Dashboard
+      const recentTxBody = document.getElementById('dashboardRecentTxBody');
+      const sortedTxs = [...appState.transactions].sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id)).slice(0, 6);
+      recentTxBody.innerHTML = sortedTxs.map(tx => {
+        const mat = appState.materials.find(m => m.id === tx.materialId);
+        const matName = mat ? mat.name : tx.materialId;
+        const unit = mat ? mat.unit : '';
+        const isIn = tx.type === 'IN';
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="py-2.5 px-4">
+              <span class="font-mono font-semibold ${isIn ? 'text-emerald-700' : 'text-amber-700'}">${tx.code}</span>
+              <div class="text-[10px] text-slate-400">${tx.date}</div>
+            </td>
+            <td class="py-2.5 px-3 font-medium text-slate-800">${matName}</td>
+            <td class="py-2.5 px-3 text-right font-bold ${isIn ? 'text-emerald-700' : 'text-amber-700'}">
+              ${isIn ? '+' : '-'}${formatNumber(tx.qty)} ${unit}
+            </td>
+            <td class="py-2.5 px-3 text-slate-600">${isIn ? tx.partner : tx.workPackage}</td>
+            <td class="py-2.5 px-4 text-right">
+              <button type="button" onclick="viewMaterialStockCard('${tx.materialId}')" class="text-blue-600 hover:underline font-medium">Xem S12</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      renderDashboardCharts(metrics);
+    }
+
+    function renderDashboardCharts(metrics) {
+      if (typeof Chart === 'undefined') return;
+
+      const categories = ['Thép xây dựng', 'Xi măng & Bê tông', 'Cốt pha & Giàn giáo', 'Cát - Đá - Gạch', 'Vật tư M&E & Phụ gia'];
+      const boqSeries = [];
+      const inboundSeries = [];
+      const outboundSeries = [];
+
+      categories.forEach(cat => {
+        const items = metrics.filter(m => m.category === cat);
+        const boqSum = items.reduce((s, i) => s + i.boqBudget, 0) / 1000000;
+        const inSum = items.reduce((s, i) => s + i.totalUsedOrImportedValue, 0) / 1000000;
+        const outSum = items.reduce((s, i) => s + i.outboundValue, 0) / 1000000;
+        boqSeries.push(Math.round(boqSum));
+        inboundSeries.push(Math.round(inSum));
+        outboundSeries.push(Math.round(outSum));
+      });
+
+      const ctx1 = document.getElementById('budgetCategoryChart');
+      if (ctx1) {
+        if (budgetChartInstance) budgetChartInstance.destroy();
+        budgetChartInstance = new Chart(ctx1, {
+          type: 'bar',
+          data: {
+            labels: ['Thép XD', 'Xi măng & BT', 'Cốt pha', 'Cát/Đá/Gạch', 'Vật tư M&E'],
+            datasets: [
+              {
+                label: 'Ngân sách BOQ (Tr.đ)',
+                data: boqSeries,
+                backgroundColor: '#3b82f6',
+                borderRadius: 6
+              },
+              {
+                label: 'Giá trị Cung ứng/Nhập (Tr.đ)',
+                data: inboundSeries,
+                backgroundColor: '#10b981',
+                borderRadius: 6
+              },
+              {
+                label: 'Đã Xuất Thi Công (Tr.đ)',
+                data: outboundSeries,
+                backgroundColor: '#f59e0b',
+                borderRadius: 6
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
+            },
+            scales: {
+              y: { beginAtZero: true, ticks: { font: { size: 11 } } },
+              x: { ticks: { font: { size: 11 } } }
+            }
+          }
+        });
+      }
+
+      // Work Package Chart
+      const wpMap = {};
+      appState.transactions.filter(t => t.type === 'OUT').forEach(t => {
+        const wp = t.workPackage || 'Hạng mục chung';
+        const val = (Number(t.qty) || 0) * (Number(t.price) || 0);
+        wpMap[wp] = (wpMap[wp] || 0) + val;
+      });
+
+      const wpLabels = Object.keys(wpMap);
+      const wpValues = wpLabels.map(k => Math.round(wpMap[k] / 1000000));
+
+      const ctx2 = document.getElementById('workPackageChart');
+      if (ctx2) {
+        if (workPackageChartInstance) workPackageChartInstance.destroy();
+        workPackageChartInstance = new Chart(ctx2, {
+          type: 'doughnut',
+          data: {
+            labels: wpLabels.length ? wpLabels : ['Chưa phát sinh xuất'],
+            datasets: [{
+              data: wpValues.length ? wpValues : [1],
+              backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#6366f1', '#ec4899'],
+              borderWidth: 2,
+              borderColor: '#ffffff'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+              tooltip: {
+                callbacks: {
+                  label: function(ctx) {
+                    return ` ${ctx.label}: ${ctx.parsed.toLocaleString('vi-VN')} Triệu VNĐ`;
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+    }
+
+    // ==================== RENDER INVENTORY TABLE ====================
+    function renderInventoryTable() {
+      const metrics = computeMaterialMetrics();
+      const q = (document.getElementById('inventorySearchInput').value || '').trim().toLowerCase();
+      const catFilter = document.getElementById('inventoryCategoryFilter').value;
+      const statusFilter = document.getElementById('inventoryStatusFilter').value;
+
+      const filtered = metrics.filter(m => {
+        if (q && !m.name.toLowerCase().includes(q) && !m.code.toLowerCase().includes(q)) return false;
+        if (catFilter !== 'ALL' && m.category !== catFilter) return false;
+        if (statusFilter === 'LOW' && !m.isLowStock) return false;
+        if (statusFilter === 'SAFE' && (m.isLowStock || m.isOverBudget)) return false;
+        if (statusFilter === 'OVER_BUDGET' && !m.isOverBudget) return false;
+        return true;
+      });
+
+      const tbody = document.getElementById('inventoryTableBody');
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="13" class="py-8 text-center text-slate-400">Không tìm thấy vật tư phù hợp với bộ lọc hiện tại.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(m => {
+        let statusBadge = `<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold text-[11px]">An toàn</span>`;
+        if (m.isLowStock) {
+          statusBadge = `<span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 font-semibold text-[11px]">Cần nhập gấp</span>`;
+        } else if (m.isOverBudget) {
+          statusBadge = `<span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold text-[11px]">Vượt BOQ</span>`;
+        }
+
+        return `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="py-3 px-3 font-mono font-bold text-slate-800">${m.code}</td>
+            <td class="py-3 px-3">
+              <div class="font-semibold text-slate-900">${m.name}</div>
+              <div class="text-[11px] text-slate-400">${getProjectNameById(m.projectId || 'PRJ01')} • ${m.location || 'Kho công trường'}</div>
+            </td>
+            <td class="py-3 px-2 text-slate-600">${m.category}</td>
+            <td class="py-3 px-2 text-center font-medium">${m.unit}</td>
+            <td class="py-3 px-2.5 text-right text-slate-600">${formatNumber(m.initialStock)}</td>
+            <td class="py-3 px-2.5 text-right font-semibold text-emerald-700">+${formatNumber(m.inboundQty)}</td>
+            <td class="py-3 px-2.5 text-right font-semibold text-amber-700">-${formatNumber(m.outboundQty)}</td>
+            <td class="py-3 px-2.5 text-right bg-slate-100 font-extrabold ${m.isLowStock ? 'text-rose-600' : 'text-slate-900'}">${formatNumber(m.currentStock)}</td>
+            <td class="py-3 px-2.5 text-right text-slate-500">${formatNumber(m.minStock)}</td>
+            <td class="py-3 px-3 text-right text-slate-700">${formatCurrency(m.avgPrice)}</td>
+            <td class="py-3 px-3 text-right font-bold text-indigo-700">${formatCurrency(m.currentStockValue)}</td>
+            <td class="py-3 px-3 text-center">${statusBadge}</td>
+            <td class="py-3 px-3 text-right whitespace-nowrap space-x-1">
+              <button type="button" onclick="viewMaterialStockCard('${m.id}')" class="px-2 py-1 rounded bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold text-[11px]" title="Mở Thẻ Kho S12-DN">Thẻ kho</button>
+              <button type="button" onclick="openEditMaterialModal('${m.id}')" class="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-[11px]" title="Sửa định mức">Sửa</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // ==================== TRANSACTIONS (NHẬP - XUẤT KHO) ====================
+    function populateMaterialSelects() {
+      const metrics = computeMaterialMetrics();
+      const txSelect = document.getElementById('txMaterialSelect');
+      const scSelect = document.getElementById('stockCardMaterialSelect');
+
+      const prevTxVal = txSelect.value;
+      const prevScVal = scSelect.value;
+
+      const optionsHtml = metrics.map(m =>
+        `<option value="${m.id}">${m.code} - ${m.name} (Tồn: ${formatNumber(m.currentStock)} ${m.unit})</option>`
+      ).join('');
+
+      txSelect.innerHTML = optionsHtml;
+      scSelect.innerHTML = optionsHtml;
+
+      if (prevTxVal && metrics.some(m => m.id === prevTxVal)) txSelect.value = prevTxVal;
+      if (prevScVal && metrics.some(m => m.id === prevScVal)) scSelect.value = prevScVal;
+    }
+
+    function setTransactionFormMode(mode) {
+      document.getElementById('txTypeInput').value = mode;
+      const inBtn = document.getElementById('txModeBtn-IN');
+      const outBtn = document.getElementById('txModeBtn-OUT');
+      const partnerContainer = document.getElementById('txPartnerContainer');
+      const wpContainer = document.getElementById('txWorkPackageContainer');
+      const partnerInput = document.getElementById('txPartnerInput');
+      const submitBtn = document.getElementById('txSubmitBtn');
+      const priceLabel = document.getElementById('txPriceLabel');
+      const personLabel = document.getElementById('txPersonLabel');
+
+      const nextIndex = appState.transactions.filter(t => t.type === mode).length + 1;
+      const prefix = mode === 'IN' ? 'PNK-2026-' : 'PXK-2026-';
+      document.getElementById('txCodeInput').value = prefix + String(nextIndex).padStart(3, '0');
+
+      if (!document.getElementById('txDateInput').value) {
+        document.getElementById('txDateInput').value = '2026-11-12';
+      }
+
+      if (mode === 'IN') {
+        inBtn.className = 'px-3 py-1 rounded-md text-xs font-semibold transition bg-emerald-600 text-white shadow-sm';
+        outBtn.className = 'px-3 py-1 rounded-md text-xs font-semibold transition text-slate-600 hover:text-slate-900';
+        partnerContainer.classList.remove('hidden');
+        wpContainer.classList.add('hidden');
+        partnerInput.required = true;
+        priceLabel.textContent = 'Đơn giá nhập (VNĐ)';
+        personLabel.textContent = 'Người giao / Thủ kho nhận';
+        submitBtn.textContent = 'Lưu Phiếu Nhập Kho & Ghi Sổ Thẻ Kho';
+        submitBtn.className = 'w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider transition shadow-sm';
+      } else {
+        outBtn.className = 'px-3 py-1 rounded-md text-xs font-semibold transition bg-amber-500 text-slate-950 shadow-sm';
+        inBtn.className = 'px-3 py-1 rounded-md text-xs font-semibold transition text-slate-600 hover:text-slate-900';
+        partnerContainer.classList.add('hidden');
+        wpContainer.classList.remove('hidden');
+        partnerInput.required = false;
+        priceLabel.textContent = 'Đơn giá xuất BQ (VNĐ)';
+        personLabel.textContent = 'Tổ đội / Kỹ sư nhận vật tư';
+        submitBtn.textContent = 'Lưu Phiếu Xuất Kho Thi Công';
+        submitBtn.className = 'w-full py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition shadow-sm';
+      }
+      onTxMaterialChange();
+    }
+
+    function onTxMaterialChange() {
+      const matId = document.getElementById('txMaterialSelect').value;
+      const metrics = computeMaterialMetrics();
+      const m = metrics.find(item => item.id === matId);
+      if (!m) return;
+
+      document.getElementById('txUnitLabel').textContent = m.unit;
+      document.getElementById('txPriceInput').value = m.avgPrice;
+      document.getElementById('hintAvailableQty').textContent = `${formatNumber(m.currentStock)} ${m.unit}`;
+      document.getElementById('hintMinQty').textContent = `${formatNumber(m.minStock)} ${m.unit}`;
+      const remBoq = Math.max(0, Number((m.boqQty - (m.initialStock + m.inboundQty)).toFixed(2)));
+      document.getElementById('hintRemainingBoq').textContent = `${formatNumber(remBoq)} ${m.unit}`;
+      validateTxFormLive();
+    }
+
+    function validateTxFormLive() {
+      const mode = document.getElementById('txTypeInput').value;
+      const matId = document.getElementById('txMaterialSelect').value;
+      const qty = Number(document.getElementById('txQtyInput').value) || 0;
+      const price = Number(document.getElementById('txPriceInput').value) || 0;
+      const total = Math.round(qty * price);
+
+      const metrics = computeMaterialMetrics();
+      const m = metrics.find(item => item.id === matId);
+      const box = document.getElementById('txLiveValidationBox');
+
+      if (m && mode === 'OUT' && qty > m.currentStock) {
+        box.className = 'p-2.5 rounded-lg bg-rose-50 border border-rose-300 text-rose-700 text-xs flex items-center justify-between';
+        box.innerHTML = `<span>Cảnh báo: Số lượng xuất vượt tồn kho khả dụng (${formatNumber(m.currentStock)} ${m.unit})!</span><strong>Không hợp lệ</strong>`;
+        return false;
+      }
+
+      if (m && mode === 'OUT' && (m.currentStock - qty) < m.minStock && qty > 0) {
+        box.className = 'p-2.5 rounded-lg bg-amber-50 border border-amber-300 text-amber-900 text-xs flex items-center justify-between';
+        box.innerHTML = `<span>Lưu ý: Tồn sau xuất (${formatNumber(m.currentStock - qty)} ${m.unit}) sẽ dưới mức tối thiểu!</span><strong id="txCalculatedTotal">${formatCurrency(total)}</strong>`;
+        return true;
+      }
+
+      box.className = 'p-2.5 rounded-lg bg-slate-100 text-slate-700 text-xs flex items-center justify-between';
+      box.innerHTML = `<span>Tổng thành tiền chứng từ:</span><strong id="txCalculatedTotal" class="text-sm text-slate-900">${formatCurrency(total)}</strong>`;
+      return true;
+    }
+
+    function submitTransactionForm(e) {
+      e.preventDefault();
+      if (!validateTxFormLive()) {
+        showToast('Không thể xuất vượt quá số lượng tồn kho hiện có!', 'error');
+        return;
+      }
+
+      const mode = document.getElementById('txTypeInput').value;
+      const code = document.getElementById('txCodeInput').value.trim();
+      const date = document.getElementById('txDateInput').value;
+      const materialId = document.getElementById('txMaterialSelect').value;
+      const qty = Number(document.getElementById('txQtyInput').value);
+      const price = Number(document.getElementById('txPriceInput').value);
+      const partner = document.getElementById('txPartnerInput').value.trim();
+      const workPackage = document.getElementById('txWorkPackageSelect').value;
+      const person = document.getElementById('txPersonInput').value.trim();
+      const wastage = Number(document.getElementById('txWastageInput').value) || 0;
+      const note = document.getElementById('txNoteInput').value.trim();
+
+      const projectId = document.getElementById('txProjectSelect')?.value || 'PRJ01';
+      const newTx = {
+        id: 'TX' + Date.now(),
+        code,
+        date,
+        type: mode,
+        projectId,
+        materialId,
+        qty,
+        price,
+        partner: mode === 'IN' ? partner : '',
+        workPackage: mode === 'OUT' ? workPackage : '',
+        person,
+        wastage: mode === 'OUT' ? wastage : 0,
+        note
+      };
+
+      appState.transactions.push(newTx);
+      saveState();
+
+      // Reset inputs
+      document.getElementById('txQtyInput').value = '';
+      document.getElementById('txNoteInput').value = '';
+      setTransactionFormMode(mode);
+      renderAll();
+      showToast(`Đã ghi sổ thành công phiếu ${code} và cập nhật Thẻ kho!`);
+    }
+
+    function deleteTransaction(txId) {
+      appState.transactions = appState.transactions.filter(t => t.id !== txId);
+      saveState();
+      renderAll();
+      showToast('Đã xóa chứng từ và tính toán lại tồn kho!', 'warning');
+    }
+
+    function renderTransactionsTable() {
+      const q = (document.getElementById('txHistorySearch').value || '').trim().toLowerCase();
+      const typeFilter = document.getElementById('txHistoryTypeFilter').value;
+
+      const sorted = [...appState.transactions].sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+      const filtered = sorted.filter(t => {
+        if (typeFilter !== 'ALL' && t.type !== typeFilter) return false;
+        const mat = appState.materials.find(m => m.id === t.materialId);
+        const matText = mat ? `${mat.code} ${mat.name}`.toLowerCase() : '';
+        const combined = `${t.code} ${t.partner} ${t.workPackage} ${t.person} ${t.note} ${matText}`.toLowerCase();
+        if (q && !combined.includes(q)) return false;
+        return true;
+      });
+
+      const tbody = document.getElementById('txHistoryTableBody');
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-slate-400">Không có chứng từ nhập/xuất nào khớp điều kiện lọc.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(tx => {
+        const mat = appState.materials.find(m => m.id === tx.materialId);
+        const isIn = tx.type === 'IN';
+        const total = Math.round((Number(tx.qty) || 0) * (Number(tx.price) || 0));
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="py-3 px-3 font-mono font-bold ${isIn ? 'text-emerald-700' : 'text-amber-700'}">${tx.code}</td>
+            <td class="py-3 px-2.5 text-slate-600 whitespace-nowrap">${tx.date}</td>
+            <td class="py-3 px-2">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isIn ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+                ${isIn ? 'NHẬP' : 'XUẤT'}
+              </span>
+            </td>
+            <td class="py-3 px-3">
+              <div class="font-semibold text-slate-900">${mat ? mat.name : tx.materialId}</div>
+              <div class="text-[11px] text-slate-500">${tx.note}</div>
+            </td>
+            <td class="py-3 px-2.5 text-right font-bold ${isIn ? 'text-emerald-700' : 'text-amber-700'} whitespace-nowrap">
+              ${isIn ? '+' : '-'}${formatNumber(tx.qty)} ${mat ? mat.unit : ''}
+            </td>
+            <td class="py-3 px-3 text-right font-medium text-slate-800 whitespace-nowrap">${formatCurrency(total)}</td>
+            <td class="py-3 px-3">
+              <div class="font-medium text-slate-800">${isIn ? tx.partner : tx.workPackage}</div>
+              <div class="text-[11px] text-slate-400">${tx.person}${!isIn && tx.wastage > 0 ? ` • Hao hụt: ${tx.wastage}%` : ''}</div>
+            </td>
+            <td class="py-3 px-2.5 text-right">
+              <button type="button" onclick="deleteTransaction('${tx.id}')" class="text-rose-500 hover:text-rose-700 font-medium text-[11px]">Xóa</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // ==================== RENDER STOCK CARD (THẺ KHO S12-DN) ====================
+    function renderStockCard() {
+      const matId = document.getElementById('stockCardMaterialSelect').value;
+      const metrics = computeMaterialMetrics();
+      const m = metrics.find(item => item.id === matId) || metrics[0];
+      if (!m) return;
+
+      const headerDiv = document.getElementById('stockCardHeaderInfo');
+      headerDiv.innerHTML = `
+        <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+          <span class="text-[11px] text-slate-500 block">Mã số vật tư</span>
+          <strong class="font-mono text-slate-900 text-sm">${m.code}</strong>
+        </div>
+        <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200 sm:col-span-2">
+          <span class="text-[11px] text-slate-500 block">Tên nhãn hiệu, quy cách vật tư</span>
+          <strong class="text-slate-900 text-sm">${m.name}</strong>
+        </div>
+        <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+          <span class="text-[11px] text-slate-500 block">Đơn vị tính & Vị trí kho</span>
+          <strong class="text-slate-900">${m.unit} • ${m.location || 'Kho chính'}</strong>
+        </div>
+        <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+          <span class="text-[11px] text-slate-500 block">Định mức tồn tối thiểu</span>
+          <strong class="text-slate-900">${formatNumber(m.minStock)} ${m.unit}</strong>
+        </div>
+        <div class="p-2.5 rounded-lg ${m.isLowStock ? 'bg-rose-50 border-rose-300' : 'bg-emerald-50 border-emerald-200'} border">
+          <span class="text-[11px] text-slate-600 block">Tồn cuối kỳ hiện tại</span>
+          <strong class="text-sm ${m.isLowStock ? 'text-rose-700' : 'text-emerald-800'}">${formatNumber(m.currentStock)} ${m.unit}</strong>
+        </div>
+      `;
+
+      const txs = appState.transactions
+        .filter(t => t.materialId === m.id)
+        .sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
+
+      let runningBalance = Number(m.initialStock) || 0;
+      let sumIn = 0;
+      let sumOut = 0;
+
+      const rowsHtml = [
+        `<tr class="bg-slate-50/70 font-semibold text-slate-800">
+          <td class="py-2.5 px-3 border border-slate-200 text-center">0</td>
+          <td class="py-2.5 px-3 border border-slate-200">Đầu kỳ</td>
+          <td class="py-2.5 px-3 border border-slate-200 font-mono">SD-DAUKY</td>
+          <td class="py-2.5 px-3 border border-slate-200">Số dư vật tư tồn kho đầu kỳ bàn giao</td>
+          <td class="py-2.5 px-3 border border-slate-200 text-right">-</td>
+          <td class="py-2.5 px-3 border border-slate-200 text-right">-</td>
+          <td class="py-2.5 px-3 border border-slate-200 text-right bg-amber-50/60 font-bold">${formatNumber(runningBalance)}</td>
+          <td class="py-2.5 px-3 border border-slate-200 text-slate-500">Ban chỉ huy xác nhận</td>
+        </tr>`
+      ];
+
+      txs.forEach((tx, idx) => {
+        const isIn = tx.type === 'IN';
+        const q = Number(tx.qty) || 0;
+        if (isIn) {
+          runningBalance = Number((runningBalance + q).toFixed(2));
+          sumIn += q;
+        } else {
+          runningBalance = Number((runningBalance - q).toFixed(2));
+          sumOut += q;
+        }
+
+        rowsHtml.push(`
+          <tr class="hover:bg-slate-50">
+            <td class="py-2.5 px-3 border border-slate-200 text-center">${idx + 1}</td>
+            <td class="py-2.5 px-3 border border-slate-200 whitespace-nowrap">${tx.date}</td>
+            <td class="py-2.5 px-3 border border-slate-200 font-mono font-bold ${isIn ? 'text-emerald-700' : 'text-amber-700'}">${tx.code}</td>
+            <td class="py-2.5 px-3 border border-slate-200">
+              <div class="font-medium text-slate-900">${tx.note}</div>
+              <div class="text-[11px] text-slate-500">${isIn ? 'Nguồn nhập: ' + tx.partner : 'Xuất cho hạng mục: ' + tx.workPackage}</div>
+            </td>
+            <td class="py-2.5 px-3 border border-slate-200 text-right font-semibold text-emerald-700">${isIn ? formatNumber(q) : '-'}</td>
+            <td class="py-2.5 px-3 border border-slate-200 text-right font-semibold text-amber-700">${!isIn ? formatNumber(q) : '-'}</td>
+            <td class="py-2.5 px-3 border border-slate-200 text-right bg-amber-50/60 font-extrabold text-slate-900">${formatNumber(runningBalance)}</td>
+            <td class="py-2.5 px-3 border border-slate-200 text-slate-600">${tx.person}</td>
+          </tr>
+        `);
+      });
+
+      document.getElementById('stockCardTableBody').innerHTML = rowsHtml.join('');
+      document.getElementById('stockCardTableFoot').innerHTML = `
+        <tr>
+          <td colspan="4" class="py-3 px-3 border border-slate-200 text-right uppercase">Cộng phát sinh trong kỳ & Tồn cuối kỳ (${m.unit}):</td>
+          <td class="py-3 px-3 border border-slate-200 text-right text-emerald-700">+${formatNumber(sumIn)}</td>
+          <td class="py-3 px-3 border border-slate-200 text-right text-amber-700">-${formatNumber(sumOut)}</td>
+          <td class="py-3 px-3 border border-slate-200 text-right bg-amber-100 text-slate-950 text-sm">${formatNumber(runningBalance)}</td>
+          <td class="py-3 px-3 border border-slate-200"></td>
+        </tr>
+      `;
+    }
+
+    // ==================== RENDER BUDGET & BOQ ====================
+    function renderBudgetTable() {
+      const metrics = computeMaterialMetrics();
+      const filter = document.getElementById('budgetFilterStatus').value;
+
+      const filtered = metrics.filter(m => {
+        if (filter === 'WARNING' && m.budgetRatio < 80) return false;
+        if (filter === 'OVER' && m.budgetRatio <= 100) return false;
+        return true;
+      });
+
+      const tbody = document.getElementById('budgetTableBody');
+      tbody.innerHTML = filtered.map(m => {
+        const pct = Math.min(100, Math.round(m.budgetRatio));
+        const barColor = m.budgetRatio > 100
+          ? 'bg-rose-600'
+          : m.budgetRatio >= 85
+            ? 'bg-amber-500'
+            : 'bg-emerald-600';
+
+        const wasteClass = m.isHighWastage ? 'text-rose-600 font-bold' : 'text-slate-700';
+
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="py-3 px-3">
+              <div class="font-semibold text-slate-900">${m.name}</div>
+              <div class="text-[11px] font-mono text-slate-400">${m.code} • ${m.category}</div>
+            </td>
+            <td class="py-3 px-2 text-center">${m.unit}</td>
+            <td class="py-3 px-2.5 text-right font-bold text-slate-900">${formatNumber(m.boqQty)}</td>
+            <td class="py-3 px-2.5 text-right text-emerald-700 font-medium">${formatNumber(m.initialStock + m.inboundQty)}</td>
+            <td class="py-3 px-2.5 text-right text-amber-700 font-medium">${formatNumber(m.outboundQty)}</td>
+            <td class="py-3 px-3 text-right font-medium text-slate-800">${formatCurrency(m.boqBudget)}</td>
+            <td class="py-3 px-3 text-right font-bold ${m.isOverBudget ? 'text-rose-600' : 'text-slate-900'}">${formatCurrency(m.totalUsedOrImportedValue)}</td>
+            <td class="py-3 px-3">
+              <div class="flex items-center justify-between text-[11px] mb-1">
+                <span class="font-semibold ${m.isOverBudget ? 'text-rose-600' : 'text-slate-700'}">${m.budgetRatio}%</span>
+                <span class="text-slate-400">${m.isOverBudget ? 'Vượt dự toán!' : 'Trong hạn mức'}</span>
+              </div>
+              <div class="w-full h-2 rounded-full bg-slate-200 overflow-hidden">
+                <div class="h-full ${barColor}" style="width: ${pct}%"></div>
+              </div>
+            </td>
+            <td class="py-3 px-2.5 text-center ${wasteClass}">
+              ${m.allowedWastage}% / ${m.actualWastage}%
+            </td>
+            <td class="py-3 px-3 text-right">
+              <button type="button" onclick="openEditMaterialModal('${m.id}')" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-800 font-medium text-[11px]">
+                Cập nhật BOQ
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // ==================== RENDER ALERTS CENTER ====================
+    function renderAlertsCenter() {
+      const metrics = computeMaterialMetrics();
+      const allAlerts = generateSmartAlerts(metrics);
+      const filter = document.getElementById('alertTypeFilter').value;
+
+      const filtered = allAlerts.filter(a => filter === 'ALL' || a.type === filter);
+      const container = document.getElementById('alertsContainerList');
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-2 p-8 text-center rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800">
+            <p class="font-bold text-sm">Không có cảnh báo rủi ro nào trong danh mục này!</p>
+            <p class="text-xs mt-1">Tất cả chỉ số tồn kho, ngân sách vật tư và hao hụt đều đang nằm trong ngưỡng kiểm soát.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(a => {
+        const isCrit = a.severity === 'CRITICAL';
+        const cardStyle = isCrit
+          ? 'border-rose-300 bg-rose-50/50'
+          : 'border-amber-300 bg-amber-50/50';
+        const badgeStyle = isCrit
+          ? 'bg-rose-600 text-white'
+          : 'bg-amber-500 text-slate-950';
+
+        return `
+          <div class="rounded-xl border ${cardStyle} p-4 flex flex-col justify-between gap-3 shadow-sm">
+            <div>
+              <div class="flex items-center justify-between gap-2">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${badgeStyle}">
+                  ${a.type === 'STOCK_LOW' ? 'Cảnh báo Tồn kho' : a.type === 'BUDGET_OVER' ? 'Cảnh báo Ngân sách BOQ' : 'Cảnh báo Hao hụt'}
+                </span>
+                <span class="font-mono text-xs text-slate-500">${a.materialCode}</span>
+              </div>
+              <h3 class="text-sm font-bold text-slate-900 mt-2">${a.title}</h3>
+              <p class="text-xs text-slate-700 mt-1">${a.detail}</p>
+              <div class="mt-2.5 p-2.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-700">
+                <strong class="text-slate-900">Đề xuất Kỹ sư Trưởng / Điều phối:</strong> ${a.recommendation}
+              </div>
+            </div>
+            <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-200/70">
+              <button type="button" onclick="viewMaterialStockCard('${a.materialId}')" class="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 text-xs font-medium">
+                Kiểm tra Thẻ Kho
+              </button>
+              ${a.type === 'STOCK_LOW' ? `
+                <button type="button" onclick="quickOrderForMaterial('${a.materialId}', ${a.suggestedOrderQty})" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold">
+                  + Tạo Phiếu Nhập Bổ Sung
+                </button>
+              ` : `
+                <button type="button" onclick="openEditMaterialModal('${a.materialId}')" class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold">
+                  Điều chỉnh Định mức / BOQ
+                </button>
+              `}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ==================== MODAL HANDLERS ====================
+    function openNewMaterialModal() {
+      document.getElementById('editMaterialId').value = '';
+      document.getElementById('materialModalTitle').textContent = 'Thêm Danh Mục Vật Tư Mới';
+      document.getElementById('matCodeInput').value = 'VT-MOI-' + String(appState.materials.length + 1).padStart(2, '0');
+      document.getElementById('matNameInput').value = '';
+      document.getElementById('matUnitInput').value = 'Tấn';
+      document.getElementById('matInitStockInput').value = 0;
+      document.getElementById('matMinStockInput').value = 10;
+      document.getElementById('matPriceInput').value = 1000000;
+      document.getElementById('matBoqQtyInput').value = 100;
+      document.getElementById('matMaxWastageInput').value = 2.0;
+
+      const modal = document.getElementById('materialModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function openEditMaterialModal(matId) {
+      const m = appState.materials.find(item => item.id === matId);
+      if (!m) return;
+      document.getElementById('editMaterialId').value = m.id;
+      document.getElementById('materialModalTitle').textContent = 'Cập Nhật Định Mức & Dự Toán BOQ: ' + m.code;
+      document.getElementById('matCodeInput').value = m.code;
+      document.getElementById('matCategoryInput').value = m.category;
+      document.getElementById('matNameInput').value = m.name;
+      document.getElementById('matUnitInput').value = m.unit;
+      document.getElementById('matInitStockInput').value = m.initialStock;
+      document.getElementById('matMinStockInput').value = m.minStock;
+      document.getElementById('matPriceInput').value = m.unitPrice;
+      document.getElementById('matBoqQtyInput').value = m.boqQty;
+      document.getElementById('matMaxWastageInput').value = m.allowedWastage;
+
+      const modal = document.getElementById('materialModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeMaterialModal() {
+      const modal = document.getElementById('materialModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function saveMaterialFromModal(e) {
+      e.preventDefault();
+      const editId = document.getElementById('editMaterialId').value;
+      const payload = {
+        code: document.getElementById('matCodeInput').value.trim(),
+        category: document.getElementById('matCategoryInput').value,
+        name: document.getElementById('matNameInput').value.trim(),
+        unit: document.getElementById('matUnitInput').value.trim(),
+        initialStock: Number(document.getElementById('matInitStockInput').value) || 0,
+        minStock: Number(document.getElementById('matMinStockInput').value) || 0,
+        unitPrice: Number(document.getElementById('matPriceInput').value) || 0,
+        boqQty: Number(document.getElementById('matBoqQtyInput').value) || 1,
+        allowedWastage: Number(document.getElementById('matMaxWastageInput').value) || 0,
+        location: 'Kho công trường'
+      };
+
+      if (editId) {
+        const idx = appState.materials.findIndex(m => m.id === editId);
+        if (idx !== -1) {
+          appState.materials[idx] = { ...appState.materials[idx], ...payload };
+        }
+        showToast(`Đã cập nhật định mức & dự toán BOQ cho ${payload.code}!`);
+      } else {
+        appState.materials.push({
+          id: 'MAT' + Date.now(),
+          ...payload
+        });
+        showToast(`Đã thêm vật tư mới ${payload.code} vào hệ thống kho!`);
+      }
+
+      saveState();
+      closeMaterialModal();
+      populateMaterialSelects();
+      renderAll();
+    }
+
+    function openResetConfirmModal() {
+      const modal = document.getElementById('resetConfirmModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeResetConfirmModal() {
+      const modal = document.getElementById('resetConfirmModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function confirmResetDemoData() {
+      appState = getDefaultState();
+      saveState();
+      closeResetConfirmModal();
+      populateProjectSelectors();
+      populateMaterialSelects();
+      populateSurplusFormSelects();
+      setTransactionFormMode('IN');
+      setSurplusFormMode('RETURN');
+      renderAll();
+      showToast('Đã khôi phục dữ liệu mẫu của dự án Hải Phòng Tower!');
+    }
+
+    // Xuất báo cáo tổng hợp ra CSV
+    function exportAllToCSV() {
+      const metrics = computeMaterialMetrics();
+      const headers = [
+        'Ma_VT', 'Ten_Vat_Tu', 'Nhom', 'DVT', 'Ton_Dau', 'Tong_Nhap', 'Tong_Xuat',
+        'Ton_Cuoi', 'Ton_Toi_Thieu', 'Don_Gia_BQ', 'Thanh_Tien_Ton', 'Du_Toan_BOQ', 'Ty_Le_Ngan_Sach_%'
+      ];
+      const rows = metrics.map(m => [
+        m.code,
+        `"${m.name.replace(/"/g, '""')}"`,
+        `"${m.category}"`,
+        m.unit,
+        m.initialStock,
+        m.inboundQty,
+        m.outboundQty,
+        m.currentStock,
+        m.minStock,
+        m.avgPrice,
+        m.currentStockValue,
+        m.boqQty,
+        m.budgetRatio
+      ]);
+
+      const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'Bao_Cao_Nhap_Xuat_Ton_Vat_Tu_Cong_Trinh.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Đã xuất file CSV Báo cáo Nhập - Xuất - Tồn & Ngân sách!');
+    }
+
+    function getProjectNameById(prjId) {
+      const p = (appState.projects || []).find(item => item.id === prjId);
+      return p ? `${p.code} (${p.name})` : 'DA-HP-TOWER';
+    }
+
+    function getWarehouseById(whId) {
+      return (appState.companyWarehouses || []).find(w => w.id === whId);
+    }
+
+    function populateProjectSelectors() {
+      const projects = appState.projects || [];
+      const globalSel = document.getElementById('globalProjectSelect');
+      if (globalSel) {
+        globalSel.innerHTML = `<option value="ALL">Tất cả dự án công ty (${projects.length} dự án)</option>` +
+          projects.map(p => `<option value="${p.id}">${p.code} - ${p.name}</option>`).join('');
+        globalSel.value = appState.selectedProjectId || 'ALL';
+      }
+
+      const txPrjSel = document.getElementById('txProjectSelect');
+      if (txPrjSel) {
+        const cur = txPrjSel.value;
+        txPrjSel.innerHTML = projects.map(p => `<option value="${p.id}">${p.code} - ${p.name} (${p.location})</option>`).join('');
+        if (cur && projects.some(p => p.id === cur)) {
+          txPrjSel.value = cur;
+        } else if (appState.selectedProjectId && appState.selectedProjectId !== 'ALL') {
+          txPrjSel.value = appState.selectedProjectId;
+        }
+      }
+
+      const titleEl = document.getElementById('projectTitleDisplay');
+      if (titleEl) {
+        if (!appState.selectedProjectId || appState.selectedProjectId === 'ALL') {
+          titleEl.textContent = `Đang xem: Tổng hợp toàn bộ ${projects.length} Dự án & ${(appState.companyWarehouses || []).length} Kho Công Ty tại các địa điểm`;
+        } else {
+          const p = projects.find(x => x.id === appState.selectedProjectId);
+          if (p) {
+            titleEl.textContent = `Dự án: ${p.name} • Địa điểm: ${p.location} • CHT: ${p.manager}`;
+          }
+        }
+      }
+    }
+
+    function onGlobalProjectChange() {
+      const sel = document.getElementById('globalProjectSelect');
+      appState.selectedProjectId = sel ? sel.value : 'ALL';
+      saveState();
+      populateProjectSelectors();
+      populateMaterialSelects();
+      renderAll();
+      showToast('Đã chuyển phạm vi dữ liệu theo dự án được chọn!');
+    }
+
+    // ==================== MULTI-WAREHOUSE & SURPLUS TRANSFER FUNCTIONS ====================
+    function populateSurplusFormSelects() {
+      const projects = appState.projects || [];
+      const warehouses = appState.companyWarehouses || [];
+      const allMaterials = computeMaterialMetrics(true);
+
+      const prjSel = document.getElementById('surplusProjectSelect');
+      const whSel = document.getElementById('surplusWarehouseSelect');
+      const matSel = document.getElementById('surplusMaterialSelect');
+      const filterWhSel = document.getElementById('warehouseStockFilterLocation');
+      const filterPrjSel = document.getElementById('warehouseStockFilterProject');
+
+      if (prjSel) {
+        const prev = prjSel.value;
+        prjSel.innerHTML = projects.map(p => `<option value="${p.id}">${p.code} - ${p.name} (${p.location})</option>`).join('');
+        if (prev && projects.some(p => p.id === prev)) prjSel.value = prev;
+      }
+
+      if (whSel) {
+        const prev = whSel.value;
+        whSel.innerHTML = warehouses.map(w => `<option value="${w.id}">${w.code} - ${w.name} [${w.address}]</option>`).join('');
+        if (prev && warehouses.some(w => w.id === prev)) whSel.value = prev;
+      }
+
+      if (matSel) {
+        const prev = matSel.value;
+        matSel.innerHTML = allMaterials.map(m => `<option value="${m.id}">${m.code} - ${m.name} (${m.unit})</option>`).join('');
+        if (prev && allMaterials.some(m => m.id === prev)) matSel.value = prev;
+      }
+
+      if (filterWhSel) {
+        const prev = filterWhSel.value || 'ALL';
+        filterWhSel.innerHTML = `<option value="ALL">Tất cả Kho Công Ty (${warehouses.length} địa điểm)</option>` +
+          warehouses.map(w => `<option value="${w.id}">${w.name} (${w.address})</option>`).join('');
+        filterWhSel.value = prev;
+      }
+
+      if (filterPrjSel) {
+        const prev = filterPrjSel.value || 'ALL';
+        filterPrjSel.innerHTML = `<option value="ALL">Mọi dự án nguồn</option>` +
+          projects.map(p => `<option value="${p.id}">${p.code} - ${p.name}</option>`).join('');
+        filterPrjSel.value = prev;
+      }
+    }
+
+    function setSurplusFormMode(mode) {
+      document.getElementById('surplusModeInput').value = mode;
+      const btnReturn = document.getElementById('surplusModeBtn-RETURN');
+      const btnReissue = document.getElementById('surplusModeBtn-REISSUE');
+      const prjLabel = document.getElementById('surplusProjectLabel');
+      const whLabel = document.getElementById('surplusWarehouseLabel');
+      const submitBtn = document.getElementById('surplusSubmitBtn');
+
+      const nextCount = (appState.surplusTransfers || []).filter(t => t.mode === mode).length + 1;
+      const prefix = mode === 'RETURN' ? 'PHT-2026-' : 'PDC-2026-';
+      document.getElementById('surplusCodeInput').value = prefix + String(nextCount).padStart(3, '0');
+      if (!document.getElementById('surplusDateInput').value) {
+        document.getElementById('surplusDateInput').value = '2026-11-12';
+      }
+
+      if (mode === 'RETURN') {
+        btnReturn.className = 'px-2.5 py-1 rounded-md text-[11px] font-semibold transition bg-indigo-600 text-white shadow-sm';
+        btnReissue.className = 'px-2.5 py-1 rounded-md text-[11px] font-semibold transition text-slate-600 hover:text-slate-900';
+        prjLabel.textContent = 'Dự án có vật tư thừa bàn giao về công ty';
+        whLabel.textContent = 'Nhập vào Kho Công Ty (Chọn địa điểm kho nhận)';
+        submitBtn.textContent = 'Ghi Sổ Thu Hồi Vật Tư Thừa Về Kho Công Ty';
+        submitBtn.className = 'w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs uppercase tracking-wider transition shadow-sm';
+      } else {
+        btnReissue.className = 'px-2.5 py-1 rounded-md text-[11px] font-semibold transition bg-emerald-600 text-white shadow-sm';
+        btnReturn.className = 'px-2.5 py-1 rounded-md text-[11px] font-semibold transition text-slate-600 hover:text-slate-900';
+        prjLabel.textContent = 'Dự án tiếp nhận vật tư tái sử dụng';
+        whLabel.textContent = 'Xuất từ Kho Công Ty (Chọn địa điểm kho xuất)';
+        submitBtn.textContent = 'Xuất Kho Công Ty Cấp Cho Dự Án Thi Công';
+        submitBtn.className = 'w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider transition shadow-sm';
+      }
+      onSurplusFormSelectionChange();
+    }
+
+    function onSurplusFormSelectionChange() {
+      const matId = document.getElementById('surplusMaterialSelect')?.value;
+      const whId = document.getElementById('surplusWarehouseSelect')?.value;
+      const qty = Number(document.getElementById('surplusQtyInput')?.value) || 0;
+      const allMetrics = computeMaterialMetrics(true);
+      const m = allMetrics.find(x => x.id === matId);
+      if (!m) return;
+
+      document.getElementById('surplusUnitSpan').textContent = m.unit;
+      document.getElementById('hintSurplusProjectStock').textContent = `${formatNumber(m.currentStock)} ${m.unit}`;
+
+      const whStock = (appState.surplusStocks || [])
+        .filter(s => s.warehouseId === whId && s.materialId === matId)
+        .reduce((sum, s) => sum + (Number(s.qty) || 0), 0);
+      document.getElementById('hintSurplusWhStock').textContent = `${formatNumber(whStock)} ${m.unit}`;
+
+      const val = Math.round(qty * m.avgPrice);
+      document.getElementById('surplusCalculatedValue').textContent = formatCurrency(val);
+    }
+
+    function submitSurplusTransferForm(e) {
+      e.preventDefault();
+      const mode = document.getElementById('surplusModeInput').value;
+      const code = document.getElementById('surplusCodeInput').value.trim();
+      const date = document.getElementById('surplusDateInput').value;
+      const projectId = document.getElementById('surplusProjectSelect').value;
+      const warehouseId = document.getElementById('surplusWarehouseSelect').value;
+      const materialId = document.getElementById('surplusMaterialSelect').value;
+      const qty = Number(document.getElementById('surplusQtyInput').value) || 0;
+      const condition = document.getElementById('surplusConditionSelect').value;
+      const handler = document.getElementById('surplusHandlerInput').value.trim();
+      const note = document.getElementById('surplusNoteInput').value.trim();
+
+      const allMetrics = computeMaterialMetrics(true);
+      const m = allMetrics.find(x => x.id === materialId);
+      const wh = getWarehouseById(warehouseId);
+      const prjName = getProjectNameById(projectId);
+      if (!m || !wh) return;
+
+      if (mode === 'RETURN') {
+        if (qty > m.currentStock) {
+          showToast(`Số lượng thu hồi (${qty} ${m.unit}) vượt quá tồn kho hiện tại ở dự án (${m.currentStock} ${m.unit})!`, 'error');
+          return;
+        }
+        // 1. Cộng vào tồn kho công ty tại địa điểm warehouseId
+        const existingLot = appState.surplusStocks.find(
+          s => s.warehouseId === warehouseId && s.materialId === materialId && s.fromProjectId === projectId && s.condition === condition
+        );
+        if (existingLot) {
+          existingLot.qty = Number((existingLot.qty + qty).toFixed(2));
+          existingLot.updatedAt = date;
+          existingLot.note = note;
+        } else {
+          appState.surplusStocks.push({
+            id: 'SUR' + Date.now(),
+            warehouseId,
+            materialId,
+            fromProjectId: projectId,
+            qty,
+            condition,
+            updatedAt: date,
+            note
+          });
+        }
+        // 2. Tạo phiếu xuất hoàn trả tại dự án để trừ tồn kho công trường & cập nhật Thẻ kho S12-DN
+        appState.transactions.push({
+          id: 'TX' + Date.now(),
+          code,
+          date,
+          type: 'OUT',
+          projectId,
+          materialId,
+          qty,
+          price: m.avgPrice,
+          partner: '',
+          workPackage: `Thu hồi VT thừa về ${wh.name} (${wh.address})`,
+          person: handler,
+          wastage: 0,
+          note: `[Thu hồi VT thừa từ ${prjName}] ${note}`
+        });
+        showToast(`Đã thu hồi ${qty} ${m.unit} ${m.name} từ ${prjName} nhập vào ${wh.name}!`);
+      } else {
+        // Mode REISSUE: Xuất từ Kho Công Ty cấp sang Dự án
+        const availableLots = appState.surplusStocks.filter(s => s.warehouseId === warehouseId && s.materialId === materialId);
+        const totalWhAvail = availableLots.reduce((sum, s) => sum + (Number(s.qty) || 0), 0);
+        if (qty > totalWhAvail) {
+          showToast(`Kho ${wh.name} chỉ còn ${formatNumber(totalWhAvail)} ${m.unit}, không đủ ${qty} ${m.unit} để cấp phát!`, 'error');
+          return;
+        }
+        let remToDeduct = qty;
+        for (const lot of availableLots) {
+          if (remToDeduct <= 0) break;
+          const take = Math.min(lot.qty, remToDeduct);
+          lot.qty = Number((lot.qty - take).toFixed(2));
+          remToDeduct = Number((remToDeduct - take).toFixed(2));
+        }
+        appState.surplusStocks = appState.surplusStocks.filter(s => s.qty > 0);
+
+        // Ghi phiếu nhập kho cho dự án nhận
+        appState.transactions.push({
+          id: 'TX' + Date.now(),
+          code,
+          date,
+          type: 'IN',
+          projectId,
+          materialId,
+          qty,
+          price: m.avgPrice,
+          partner: `Điều chuyển từ ${wh.name} (${wh.address})`,
+          workPackage: '',
+          person: handler,
+          wastage: 0,
+          note: `[Tái sử dụng VT thừa cấp cho ${prjName}] ${note}`
+        });
+        showToast(`Đã điều chuyển ${qty} ${m.unit} từ ${wh.name} cấp cho ${prjName}!`);
+      }
+
+      appState.surplusTransfers.push({
+        id: 'STX' + Date.now(),
+        code,
+        date,
+        mode,
+        projectId,
+        warehouseId,
+        materialId,
+        qty,
+        condition,
+        handler,
+        note
+      });
+
+      saveState();
+      document.getElementById('surplusQtyInput').value = '';
+      document.getElementById('surplusNoteInput').value = '';
+      setSurplusFormMode(mode);
+      renderAll();
+    }
+
+    function quickReissueFromWarehouse(warehouseId, materialId, maxQty) {
+      switchTab('warehouses');
+      setSurplusFormMode('REISSUE');
+      document.getElementById('surplusWarehouseSelect').value = warehouseId;
+      document.getElementById('surplusMaterialSelect').value = materialId;
+      document.getElementById('surplusQtyInput').value = maxQty;
+      document.getElementById('surplusNoteInput').value = 'Xuất tái sử dụng vật tư tồn từ Kho Công Ty cấp cho dự án mới';
+      onSurplusFormSelectionChange();
+      showToast('Đã chọn sẵn lô vật tư thừa tại Kho Công Ty để cấp sang dự án khác!');
+    }
+
+    function renderWarehousesTab() {
+      const warehouses = appState.companyWarehouses || [];
+      const stocks = appState.surplusStocks || [];
+      const allMetrics = computeMaterialMetrics(true);
+
+      const badge = document.getElementById('navWarehouseBadge');
+      if (badge) badge.textContent = `${warehouses.length} kho`;
+
+      // 1. Render Cards for each Company Warehouse Location
+      const grid = document.getElementById('companyWarehousesGrid');
+      if (grid) {
+        grid.innerHTML = warehouses.map(w => {
+          const whLots = stocks.filter(s => s.warehouseId === w.id && s.qty > 0);
+          let whValue = 0;
+          whLots.forEach(lot => {
+            const mat = allMetrics.find(m => m.id === lot.materialId);
+            whValue += (Number(lot.qty) || 0) * (mat ? mat.avgPrice : 0);
+          });
+          return `
+            <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4 flex flex-col justify-between hover:border-indigo-300 transition">
+              <div>
+                <div class="flex items-center justify-between gap-2">
+                  <span class="px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 font-mono font-bold text-[11px]">${w.code}</span>
+                  <span class="text-[11px] font-semibold text-emerald-700">${whLots.length} lô vật tư</span>
+                </div>
+                <h4 class="text-sm font-bold text-slate-900 mt-2">${w.name}</h4>
+                <p class="text-xs text-slate-600 mt-1 flex items-start gap-1">
+                  <span class="text-amber-600 font-bold">📍</span>
+                  <span>${w.address}</span>
+                </p>
+                <p class="text-[11px] text-slate-500 mt-1.5">${w.keeper}</p>
+              </div>
+              <div class="mt-3 pt-2.5 border-t border-slate-200 flex items-center justify-between">
+                <span class="text-[11px] text-slate-500">Giá trị VT thừa lưu kho:</span>
+                <strong class="text-xs font-bold text-indigo-700">${formatCurrency(whValue)}</strong>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // 2. Render Surplus Inventory Table by Warehouse Location
+      const locFilter = document.getElementById('warehouseStockFilterLocation')?.value || 'ALL';
+      const prjFilter = document.getElementById('warehouseStockFilterProject')?.value || 'ALL';
+
+      const filteredStocks = stocks.filter(s => {
+        if (s.qty <= 0) return false;
+        if (locFilter !== 'ALL' && s.warehouseId !== locFilter) return false;
+        if (prjFilter !== 'ALL' && s.fromProjectId !== prjFilter) return false;
+        return true;
+      });
+
+      const stockBody = document.getElementById('warehouseSurplusStockBody');
+      if (stockBody) {
+        if (filteredStocks.length === 0) {
+          stockBody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400">Không có lô vật tư thừa nào tại địa điểm kho đang lọc.</td></tr>`;
+        } else {
+          stockBody.innerHTML = filteredStocks.map(lot => {
+            const wh = getWarehouseById(lot.warehouseId);
+            const mat = allMetrics.find(m => m.id === lot.materialId);
+            const val = Math.round((Number(lot.qty) || 0) * (mat ? mat.avgPrice : 0));
+            return `
+              <tr class="hover:bg-slate-50">
+                <td class="py-3 px-3">
+                  <div class="font-bold text-slate-900">${wh ? wh.name : lot.warehouseId}</div>
+                  <div class="text-[11px] text-slate-500">📍 ${wh ? wh.address : ''}</div>
+                </td>
+                <td class="py-3 px-3">
+                  <div class="font-semibold text-slate-900">${mat ? mat.name : lot.materialId}</div>
+                  <div class="text-[11px] font-mono text-slate-400">${mat ? mat.code : ''}</div>
+                </td>
+                <td class="py-3 px-3">
+                  <span class="font-medium text-slate-800">${getProjectNameById(lot.fromProjectId)}</span>
+                  <div class="text-[11px] text-slate-400">${lot.note || ''}</div>
+                </td>
+                <td class="py-3 px-2.5 text-right font-extrabold text-indigo-700 whitespace-nowrap">
+                  ${formatNumber(lot.qty)} ${mat ? mat.unit : ''}
+                </td>
+                <td class="py-3 px-3 text-right font-semibold text-slate-800 whitespace-nowrap">${formatCurrency(val)}</td>
+                <td class="py-3 px-2.5 text-center">
+                  <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-semibold">${lot.condition}</span>
+                </td>
+                <td class="py-3 px-3 text-right whitespace-nowrap">
+                  <button type="button" onclick="quickReissueFromWarehouse('${lot.warehouseId}', '${lot.materialId}', ${lot.qty})" class="px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-[11px]">
+                    Cấp sang DA khác →
+                  </button>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+      }
+
+      // 3. Render Surplus Transfer History
+      const totalSaved = stocks.reduce((acc, lot) => {
+        const mat = allMetrics.find(m => m.id === lot.materialId);
+        return acc + (Number(lot.qty) || 0) * (mat ? mat.avgPrice : 0);
+      }, 0);
+      const savedBadge = document.getElementById('totalSurplusSavedBadge');
+      if (savedBadge) savedBadge.textContent = `Tổng giá trị VT thừa đang lưu kho công ty: ${formatCurrency(totalSaved)}`;
+
+      const historyBody = document.getElementById('surplusHistoryTableBody');
+      if (historyBody) {
+        const sortedHist = [...(appState.surplusTransfers || [])].reverse();
+        historyBody.innerHTML = sortedHist.map(item => {
+          const isRet = item.mode === 'RETURN';
+          const wh = getWarehouseById(item.warehouseId);
+          const mat = allMetrics.find(m => m.id === item.materialId);
+          return `
+            <tr class="hover:bg-slate-50">
+              <td class="py-2.5 px-3">
+                <span class="font-mono font-bold ${isRet ? 'text-indigo-700' : 'text-emerald-700'}">${item.code}</span>
+                <div class="text-[10px] text-slate-400">${item.date}</div>
+              </td>
+              <td class="py-2.5 px-2">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isRet ? 'bg-indigo-100 text-indigo-800' : 'bg-emerald-100 text-emerald-800'}">
+                  ${isRet ? 'THU HỒI VỀ KHO CTY' : 'TÁI CẤP DỰ ÁN'}
+                </span>
+              </td>
+              <td class="py-2.5 px-3">
+                <div class="font-semibold text-slate-900">${mat ? mat.name : item.materialId}</div>
+                <div class="font-bold text-slate-700">${formatNumber(item.qty)} ${mat ? mat.unit : ''}</div>
+              </td>
+              <td class="py-2.5 px-3">
+                <div class="font-medium text-slate-900">${getProjectNameById(item.projectId)}</div>
+                <div class="text-[11px] text-indigo-700 font-medium">${isRet ? '↳ Nhập về: ' : '↰ Xuất từ: '}${wh ? `${wh.name} (${wh.address})` : item.warehouseId}</div>
+              </td>
+              <td class="py-2.5 px-3">
+                <div class="text-slate-700">${item.note}</div>
+                <div class="text-[10px] text-slate-400">${item.condition} • ${item.handler}</div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+    }
+
+    function openProjectModal() {
+      const nextNum = (appState.projects || []).length + 1;
+      document.getElementById('newPrjCodeInput').value = 'DA-MOI-0' + nextNum;
+      document.getElementById('newPrjNameInput').value = '';
+      document.getElementById('newPrjLocationInput').value = '';
+      document.getElementById('newPrjManagerInput').value = '';
+      const modal = document.getElementById('projectModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeProjectModal() {
+      const modal = document.getElementById('projectModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function saveNewProject(e) {
+      e.preventDefault();
+      const newPrj = {
+        id: 'PRJ' + Date.now(),
+        code: document.getElementById('newPrjCodeInput').value.trim(),
+        name: document.getElementById('newPrjNameInput').value.trim(),
+        location: document.getElementById('newPrjLocationInput').value.trim(),
+        manager: document.getElementById('newPrjManagerInput').value.trim(),
+        stage: 'Mới khởi tạo'
+      };
+      appState.projects.push(newPrj);
+      appState.selectedProjectId = newPrj.id;
+      saveState();
+      closeProjectModal();
+      populateProjectSelectors();
+      populateSurplusFormSelects();
+      renderAll();
+      showToast(`Đã thêm dự án mới: ${newPrj.name}!`);
+    }
+
+    function openWarehouseModal() {
+      const nextNum = (appState.companyWarehouses || []).length + 1;
+      document.getElementById('newWhCodeInput').value = 'KHO-CTY-0' + nextNum;
+      document.getElementById('newWhNameInput').value = '';
+      document.getElementById('newWhAddressInput').value = '';
+      document.getElementById('newWhKeeperInput').value = '';
+      const modal = document.getElementById('warehouseModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeWarehouseModal() {
+      const modal = document.getElementById('warehouseModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function saveNewWarehouse(e) {
+      e.preventDefault();
+      const newWh = {
+        id: 'WH' + Date.now(),
+        code: document.getElementById('newWhCodeInput').value.trim(),
+        name: document.getElementById('newWhNameInput').value.trim(),
+        address: document.getElementById('newWhAddressInput').value.trim(),
+        keeper: document.getElementById('newWhKeeperInput').value.trim(),
+        specialty: 'Kho vật tư & thu hồi vật tư thừa'
+      };
+      appState.companyWarehouses.push(newWh);
+      saveState();
+      closeWarehouseModal();
+      populateSurplusFormSelects();
+      renderAll();
+      showToast(`Đã thêm Kho Công Ty mới tại địa điểm: ${newWh.address}!`);
+    }
+
+    function renderAll() {
+      const metrics = computeMaterialMetrics();
+      const alerts = generateSmartAlerts(metrics);
+      renderDashboard(metrics, alerts);
+      renderInventoryTable();
+      renderTransactionsTable();
+      renderStockCard();
+      renderBudgetTable();
+      renderAlertsCenter();
+      renderWarehousesTab();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      populateProjectSelectors();
+      populateMaterialSelects();
+      populateSurplusFormSelects();
+      setTransactionFormMode('IN');
+      setSurplusFormMode('RETURN');
+      renderAll();
+    });
+  </script>
+</body>
+</html>
